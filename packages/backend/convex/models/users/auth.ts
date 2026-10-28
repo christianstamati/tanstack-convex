@@ -4,13 +4,15 @@ import { makeFunctionReference } from "convex/server";
 import { v } from "convex/values";
 import { components, internal } from "../../lib/api.refs";
 import { env, internalMutation } from "../../_generated/server";
+import { storeEmail } from "../devMailbox/functions";
 
 const core = setupConvexAuth({ component: components.auth });
 const { signOut, refreshSession } = core;
 
 /**
  * Stands in for Resend's `sendEmail` while RESEND_API_KEY is unset, as on a new local deployment:
- * the email, with its link, goes to the Convex logs, which `bun run dev` prints.
+ * the email, with its link, goes to the Convex logs, which `bun run dev` prints, and to the
+ * devMailbox table, where `internal/devMailbox:latest` finds it.
  */
 const logEmail = internalMutation({
   args: {
@@ -21,12 +23,13 @@ const logEmail = internalMutation({
     text: v.optional(v.string()),
   },
   returns: v.null(),
-  handler: async (_ctx, { to, subject, text }) => {
+  handler: async (ctx, { to, subject, text }) => {
     // One line per message: Convex prints a logged string quoted, with newlines as `\n`. The
     // link is followed by a space, so the terminal sees where it ends and can open it.
     console.log(`Email not sent (no RESEND_API_KEY) to ${to.join(", ")}: ${subject}`);
     const link = text?.match(/https?:\/\/\S+/)?.[0];
     if (link) console.log(`Open ${link} in the browser that asked for it.`);
+    await storeEmail(ctx, { to, subject: subject ?? "", text: text ?? "" });
     return null;
   },
 });

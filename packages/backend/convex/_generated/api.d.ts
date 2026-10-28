@@ -11,9 +11,12 @@
 import type * as api_auth from "../api/auth.js";
 import type * as api_notes from "../api/notes.js";
 import type * as api_users from "../api/users.js";
+import type * as internal_devMailbox from "../internal/devMailbox.js";
 import type * as internal_users from "../internal/users.js";
 import type * as lib_auth from "../lib/auth.js";
 import type * as lib_errors from "../lib/errors.js";
+import type * as models_devMailbox_functions from "../models/devMailbox/functions.js";
+import type * as models_devMailbox_table from "../models/devMailbox/table.js";
 import type * as models_notes_functions from "../models/notes/functions.js";
 import type * as models_notes_table from "../models/notes/table.js";
 import type * as models_users_auth from "../models/users/auth.js";
@@ -30,9 +33,12 @@ declare const fullApi: ApiFromModules<{
   "api/auth": typeof api_auth;
   "api/notes": typeof api_notes;
   "api/users": typeof api_users;
+  "internal/devMailbox": typeof internal_devMailbox;
   "internal/users": typeof internal_users;
   "lib/auth": typeof lib_auth;
   "lib/errors": typeof lib_errors;
+  "models/devMailbox/functions": typeof models_devMailbox_functions;
+  "models/devMailbox/table": typeof models_devMailbox_table;
   "models/notes/functions": typeof models_notes_functions;
   "models/notes/table": typeof models_notes_table;
   "models/users/auth": typeof models_users_auth;

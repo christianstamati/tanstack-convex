@@ -141,6 +141,7 @@ one. The session lives in httpOnly cookies on the web app's origin, through
 [@samebase/convex-auth-tanstack-start](https://github.com/samebase/convex-hosting/tree/main/packages/convex-auth-tanstack-start),
 so the server renders each page as the user. Convex Auth doesn't ship a TanStack Start
 integration yet; that package is the interim one, and it requires exactly this beta.
+[KNOWN_ISSUES.md](KNOWN_ISSUES.md) lists what the beta can't do yet and what isn't built.
 
 - `apps/web/src/server.ts`, the Worker, answers `/auth/signin`, `/auth/refresh` and
   `/auth/signout` and passes the session to TanStack Start.

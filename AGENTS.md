@@ -72,6 +72,8 @@ The pre-commit hook runs `vp check --fix` on staged files. Don't skip it with `-
   exactly) with email and password, and
   [@samebase/convex-auth-tanstack-start](https://github.com/samebase/convex-hosting/tree/main/packages/convex-auth-tanstack-start)
   for sessions in httpOnly cookies, so pages render as the user on the server.
+  `KNOWN_ISSUES.md` lists the beta's limits and the workarounds; update it when you change
+  auth or upgrade either package.
   - Every Convex function is public, so check the session in each one. Define functions
     that need one with `authQuery`, `authMutation` or `authAction` from `convex/lib/auth.ts`
     (convex-helpers custom functions): they throw `not_signed_in` without a session and give
@@ -84,7 +86,11 @@ The pre-commit hook runs `vp check --fix` on staged files. Don't skip it with `-
     renders it with the new session.
   - A Convex Auth function that starts a session must be in the `signIn` list of
     `apps/web/src/server.ts`, or `/auth/signin` refuses it.
-  - Without `RESEND_API_KEY`, auth emails are logged by `bun run dev` instead of sent.
+  - Without `RESEND_API_KEY`, auth emails are logged by `bun run dev` instead of sent, and
+    stored in the `devMailbox` table. To test sign-up or password reset, read the newest
+    email's `link` and `code` from packages/backend with
+    `bunx convex run internal/devMailbox:latest '{"to": "ada@example.com"}'` and open the link
+    in the same browser.
 - Env vars a Convex function needs are declared in `defineApp({ env })` in
   `convex/convex.config.ts`, read as `env` from `./_generated/server`, and set with
   `bunx convex env set` in packages/backend. A push fails while a required one is missing.

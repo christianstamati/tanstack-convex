@@ -41,8 +41,8 @@ function setup() {
   registerCore.registerCore(t);
   registerEmail(t);
   registerPasswordProvider(t);
-  // Without RESEND_API_KEY, `logEmail` logs the link instead of sending it.
-  const log = vi.spyOn(console, "log").mockImplementation(() => {});
+  // Without RESEND_API_KEY, `logEmail` logs each email and stores it in devMailbox.
+  vi.spyOn(console, "log").mockImplementation(() => {});
   const users = () => t.run((ctx) => ctx.db.query("users").take(10));
   // The email component rate-limits sign-ups by the client's IP.
   const browser = t.withRequestMetadata({ ip: "127.0.0.1" });
@@ -54,15 +54,11 @@ function setup() {
       password: "correct horse battery staple",
     });
     if (!result.success) throw new Error(result.userError.error);
-    const line = log.mock.calls.map(([text]) => String(text)).findLast((l) => l.includes(email));
-    const code = log.mock.calls
-      .map(([text]) => String(text))
-      .findLast((l) => l.startsWith("Open "))
-      ?.match(/code=([\w-]+)/)?.[1];
-    expect(line).toBeDefined();
+    const mail = await t.query(internal.devMailbox.latest, { to: email });
+    expect(mail?.code).toBeTruthy();
     if (verify) {
       const complete = await browser.mutation(api.auth.completeSignUp, {
-        emailCode: code!,
+        emailCode: mail!.code!,
         browserSecret: result.browserSecret,
       });
       expect(complete.status).toBe("complete");

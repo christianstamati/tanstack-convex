@@ -26,4 +26,26 @@ describe("logEmail", () => {
       "Open http://localhost:3000/verify-email?code=abc_-1 in the browser that asked for it.",
     ]);
   });
+
+  test("stores the email in devMailbox, with its link and code", async () => {
+    vi.spyOn(console, "log").mockImplementation(() => {});
+    const t = convexTest(schema, modules);
+    await t.mutation(internal.users.logEmail, {
+      options: {},
+      from: "onboarding@resend.dev",
+      to: ["Ada@Example.com"],
+      subject: "Reset your password",
+      text: "Open this link to reset your password:\n\nhttp://localhost:3000/reset-password?code=xyz\n",
+    });
+
+    const email = await t.query(internal.devMailbox.latest, { to: "ada@example.com" });
+    expect(email).toMatchObject({
+      to: "ada@example.com",
+      subject: "Reset your password",
+      link: "http://localhost:3000/reset-password?code=xyz",
+      code: "xyz",
+    });
+    expect(await t.query(internal.devMailbox.latest, { to: "bob@example.com" })).toBeNull();
+    expect(await t.query(internal.devMailbox.list, {})).toHaveLength(1);
+  });
 });
