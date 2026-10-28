@@ -1,4 +1,5 @@
 // Example feature: delete this file (and the link on the home page) to remove it.
+import { convexQuery, useConvexMutation } from "@convex-dev/react-query";
 import { Button } from "@workspace/ui/components/button";
 import {
   Card,
@@ -8,19 +9,25 @@ import {
   CardTitle,
 } from "@workspace/ui/components/card";
 import { Input } from "@workspace/ui/components/input";
+import { useMutation, useSuspenseQuery } from "@tanstack/react-query";
 import { createFileRoute } from "@tanstack/react-router";
-import { useMutation, useQuery } from "convex/react";
 import { useState } from "react";
 import { api } from "#/lib/api";
 import { attempt } from "#/lib/errors";
 
-export const Route = createFileRoute("/notes")({ component: Notes });
+const notesQuery = convexQuery(api.notes.list);
+
+export const Route = createFileRoute("/notes")({
+  // Fetched during SSR, then kept live by the Convex subscription.
+  loader: ({ context }) => context.queryClient.query({ ...notesQuery, staleTime: "static" }),
+  component: Notes,
+});
 
 function Notes() {
   const [text, setText] = useState("");
-  const notes = useQuery(api.notes.list);
-  const create = useMutation(api.notes.create);
-  const remove = useMutation(api.notes.remove);
+  const { data: notes } = useSuspenseQuery(notesQuery);
+  const create = useMutation({ mutationFn: useConvexMutation(api.notes.create) });
+  const remove = useMutation({ mutationFn: useConvexMutation(api.notes.remove) });
 
   return (
     <main className="mx-auto flex min-h-svh max-w-xl flex-col gap-4 p-6 pt-16">
@@ -35,7 +42,9 @@ function Notes() {
             onSubmit={async (event) => {
               event.preventDefault();
               if (text.trim() === "") return;
-              if (await attempt(create({ text }), "Couldn't add the note.")) setText("");
+              if (await attempt(create.mutateAsync({ text }), "Couldn't add the note.")) {
+                setText("");
+              }
             }}
           >
             <Input
@@ -44,11 +53,11 @@ function Notes() {
               value={text}
               onChange={(event) => setText(event.target.value)}
             />
-            <Button type="submit">Add</Button>
+            <Button type="submit" disabled={create.isPending}>
+              Add
+            </Button>
           </form>
-          {notes === undefined ? (
-            <p className="text-sm text-muted-foreground">Loading…</p>
-          ) : notes.length === 0 ? (
+          {notes.length === 0 ? (
             <p className="text-sm text-muted-foreground">No notes yet.</p>
           ) : (
             <ul className="flex flex-col gap-2">
@@ -58,8 +67,12 @@ function Notes() {
                   <Button
                     variant="ghost"
                     size="sm"
+                    disabled={remove.isPending && remove.variables.id === note._id}
                     onClick={() =>
-                      void attempt(remove({ id: note._id }), "Couldn't delete the note.")
+                      void attempt(
+                        remove.mutateAsync({ id: note._id }),
+                        "Couldn't delete the note.",
+                      )
                     }
                   >
                     Delete

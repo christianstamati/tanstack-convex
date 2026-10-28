@@ -69,13 +69,20 @@ The pre-commit hook runs `vp check --fix` on staged files. Don't skip it with `-
   directly in `convex/`. This follows
   [ianmacartney/code-organization-pattern](https://github.com/ianmacartney/code-organization-pattern):
   definitions live in one place and `convex/api/` picks what's public.
-- In the web app, call Convex with `useQuery` and `useMutation` from `convex/react`, as
+- In the web app, call Convex through TanStack Query with `@convex-dev/react-query`, as
   `api.<table>.<function>` with `api` from `#/lib/api`. It re-exports the generated
   `api.api` (the functions in `convex/api/`), so don't import the generated `api` in
-  components. Run mutations and actions through `attempt(promise, fallback)` from
-  `#/lib/errors`, which shows a toast on failure and resolves to whether it succeeded:
-  `if (await attempt(create({ text }), "Couldn't add the note.")) setText("")`. It never
-  rejects, so don't wrap it in try/catch.
+  components, and don't use the hooks from `convex/react`. For reads, load
+  `convexQuery(api.<table>.<function>, args)` in the route `loader` with
+  `context.queryClient.query({ ...query, staleTime: "static" })` (not the deprecated
+  `ensureQueryData`) and read it with `useSuspenseQuery`, so the
+  page renders with its data on the server and Convex keeps it live afterwards. For writes,
+  use `useMutation({ mutationFn: useConvexMutation(api.<table>.<function>) })` from
+  `@tanstack/react-query`, which gives you `isPending`. Run mutations and actions through
+  `attempt(promise, fallback)` from `#/lib/errors`, which shows a toast on failure and
+  resolves to whether it succeeded:
+  `if (await attempt(create.mutateAsync({ text }), "Couldn't add the note.")) setText("")`.
+  It never rejects, so don't wrap it in try/catch.
 - Errors use [@cs-stack/convex-errors](https://www.npmjs.com/package/@cs-stack/convex-errors).
   Declare each user-facing error once in `convex/lib/errors.ts` and throw it with
   `throw errors.create(code, params)`, never `new Error("…")` or `new ConvexError("…")`. A
