@@ -3,6 +3,7 @@ import { v } from "convex/values";
 import { query } from "../../_generated/server";
 import { authMutation } from "../../lib/auth";
 import { errors } from "../../lib/errors";
+import { enforceRateLimit } from "../../lib/rateLimits";
 import schema from "../../schema";
 
 const MIN_LENGTH = 1;
@@ -34,6 +35,7 @@ const create = authMutation({
     if (trimmed.length < MIN_LENGTH || trimmed.length > MAX_LENGTH) {
       throw errors.create("invalid_length", { what: "note", min: MIN_LENGTH, max: MAX_LENGTH });
     }
+    await enforceRateLimit(ctx, "createNote", userId);
     return await ctx.db.insert("notes", { userId, text: trimmed });
   },
 });

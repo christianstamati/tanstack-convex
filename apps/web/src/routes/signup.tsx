@@ -5,10 +5,10 @@ import { useState } from "react";
 import { AuthCard, Field, FormError, PasswordField } from "#/components/auth-card";
 import { api } from "#/lib/api";
 import { authErrorMessage } from "#/lib/auth";
-import { pageTitle } from "#/lib/title";
+import { pageMeta } from "#/lib/meta";
 
 export const Route = createFileRoute("/signup")({
-  head: () => ({ meta: [pageTitle("Sign up")] }),
+  head: () => ({ meta: pageMeta("Sign up") }),
   component: SignUp,
 });
 

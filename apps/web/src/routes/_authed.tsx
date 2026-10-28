@@ -12,6 +12,8 @@ export const Route = createFileRoute("/_authed")({
   beforeLoad: ({ serverContext, location }) => {
     redirectWithoutSession(serverContext, { to: "/signin", search: { next: location.href } });
   },
+  // Private pages stay out of search results, even if a crawler finds a link to one.
+  head: () => ({ meta: [{ name: "robots", content: "noindex" }] }),
   // In the browser: on a navigation inside the app, and when the session ends in any tab.
   component: () => (
     <RedirectWithoutSession to={(next) => ({ to: "/signin", search: { next } })}>

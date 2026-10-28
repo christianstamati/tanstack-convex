@@ -15,10 +15,10 @@ import { Field } from "#/components/auth-card";
 import { api } from "#/lib/api";
 import { meQuery } from "#/lib/auth";
 import { attempt } from "#/lib/errors";
-import { pageTitle } from "#/lib/title";
+import { pageMeta } from "#/lib/meta";
 
 export const Route = createFileRoute("/_authed/settings")({
-  head: () => ({ meta: [pageTitle("Settings")] }),
+  head: () => ({ meta: pageMeta("Settings") }),
   // Usually in the cache already: the root route loads it for a page rendered as the user.
   loader: ({ context }) => context.queryClient.query({ ...meQuery, staleTime: "static" }),
   component: Settings,

@@ -15,6 +15,7 @@ export default {
     const url = new URL(request.url);
     // `Secure` when the browser came over HTTPS. `bun run dev` serves plain HTTP.
     const cookieOptions = { secure: url.protocol === "https:" };
+    if (request.method === "GET" && url.pathname === "/health") return health();
     if (request.method === "POST") {
       const auth = setupConvexAuthServer({
         convexUrl,
@@ -51,3 +52,21 @@ export default {
     return new Response(page.body, { status: page.status, headers });
   },
 };
+
+/**
+ * For uptime monitors: 200 while the Worker runs and Convex answers, 503 when Convex doesn't.
+ * It asks the deployment's `/version`, which every Convex backend serves without running a
+ * function, so a check costs no function calls.
+ */
+async function health(): Promise<Response> {
+  const convexUp = await fetch(new URL("/version", convexUrl), {
+    signal: AbortSignal.timeout(3000),
+  }).then(
+    (response) => response.ok,
+    () => false,
+  );
+  return Response.json(
+    { status: convexUp ? "ok" : "degraded", convex: convexUp ? "up" : "unreachable" },
+    { status: convexUp ? 200 : 503, headers: { "Cache-Control": "no-store" } },
+  );
+}

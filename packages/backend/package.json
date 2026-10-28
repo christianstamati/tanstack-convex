@@ -16,6 +16,7 @@
   },
   "dependencies": {
     "@convex-dev/auth": "2.0.0-beta.0",
+    "@convex-dev/rate-limiter": "^0.4.2",
     "@convex-dev/resend": "^0.2.10",
     "@cs-stack/convex-errors": "^0.1.2",
     "convex": "^1.48.0",

@@ -1,6 +1,7 @@
 import auth from "@convex-dev/auth/convex.config";
 import authEmail from "@convex-dev/auth/components/email/convex.config";
 import authPassword from "@convex-dev/auth/components/password/convex.config";
+import rateLimiter from "@convex-dev/rate-limiter/convex.config";
 import resend from "@convex-dev/resend/convex.config";
 import { defineApp } from "convex/server";
 import { v } from "convex/values";
@@ -30,5 +31,8 @@ app.use(auth, {
 app.use(authEmail);
 app.use(authPassword);
 app.use(resend);
+// The app's own rate limits, in convex/lib/rateLimits.ts. Convex Auth limits sign-in attempts
+// and auth emails in its own components.
+app.use(rateLimiter);
 
 export default app;
