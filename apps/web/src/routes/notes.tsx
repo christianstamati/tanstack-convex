@@ -54,7 +54,7 @@ function Notes() {
             <ul className="flex flex-col gap-2">
               {notes.map((note) => (
                 <li key={note._id} className="flex items-center justify-between gap-2 text-sm">
-                  <span className="break-words">{note.text}</span>
+                  <span className="wrap-break-word">{note.text}</span>
                   <Button
                     variant="ghost"
                     size="sm"
