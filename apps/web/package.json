@@ -11,8 +11,7 @@
     "build": "vp build",
     "build:cloudflare": "bun ../../scripts/cloudflare-build.ts",
     "preview": "vp preview",
-    "deploy": "wrangler deploy",
-    "cf-typegen": "wrangler types",
+    "deploy": "cf deploy --prebuilt",
     "test": "vp test run"
   },
   "dependencies": {
@@ -37,7 +36,7 @@
     "tailwindcss": "^4.1.18"
   },
   "devDependencies": {
-    "@cloudflare/vite-plugin": "^1.65.0",
+    "@cloudflare/vite-plugin": "2.0.0-beta.v.6",
     "@tanstack/devtools-vite": "0.8.5",
     "@tanstack/router-cli": "^1.132.0",
     "@types/node": "^22.10.2",
@@ -45,9 +44,9 @@
     "@types/react-dom": "^19.2.0",
     "@vitejs/plugin-react": "^6.0.1",
     "@workspace/tsconfig": "workspace:*",
+    "cf": "1.0.0-beta.24",
     "typescript": "^7.0.2",
     "vite": "catalog:",
-    "vite-plus": "catalog:",
-    "wrangler": "^4.153.0"
+    "vite-plus": "catalog:"
   }
 }

@@ -7,6 +7,7 @@ const IGNORED = [
   "**/convex/_generated/**",
   "**/.output/**",
   "**/.wrangler/**",
+  "**/.cloudflare/**",
   "**/dist/**",
   ".agents/**",
   ".claude/skills/**",

@@ -5,7 +5,7 @@ Notes for coding agents working in this repo. Read this before changing anything
 ## Layout
 
 ```
-apps/web/          TanStack Start app, deployed by Cloudflare Workers Builds (wrangler.jsonc)
+apps/web/          TanStack Start app, deployed by Cloudflare Workers Builds (cloudflare.config.ts)
   src/server.ts    The Worker: /health, the /auth routes, then TanStack Start rendering as the user
   src/start.ts     Request middleware: no page may be cached (pages are rendered per user)
   src/routes/      File-based routes. src/routeTree.gen.ts is generated, never edit it.

@@ -67,7 +67,7 @@ jobs:
       - name: Audit production dependencies
         run: bun audit --prod --audit-level=high
 
-      # Dev tooling (wrangler, the shadcn CLI…) runs only on developer machines and in CI, so its
+      # Dev tooling (the Cloudflare CLI, the shadcn CLI…) runs only on developer machines and in CI, so its
       # advisories go to the job summary without failing the job.
       - name: Report all advisories
         if: ${{ !cancelled() }}

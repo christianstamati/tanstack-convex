@@ -199,15 +199,15 @@ deployed yet. When you're ready:
 3. In the Cloudflare dashboard, go to Workers & Pages > Create > Import a repository, pick
    this repo and set:
 
-   | Setting         | Value                                                              |
-   | --------------- | ------------------------------------------------------------------ |
-   | Project name    | `tanstack-convex-starter`, the `name` in `apps/web/wrangler.jsonc` |
-   | Root directory  | `apps/web`                                                         |
-   | Build command   | `bun run build:cloudflare`                                         |
-   | Deploy command  | `bunx wrangler deploy`                                             |
-   | Preview command | `bunx wrangler preview`                                            |
-   | Build variables | `BUN_VERSION` = `1.4.4`, `SKIP_DEPENDENCY_INSTALL` = `1`           |
-   | Build secrets   | `CONVEX_DEPLOY_KEY`, `CONVEX_PREVIEW_DEPLOY_KEY`                   |
+   | Setting         | Value                                                                    |
+   | --------------- | ------------------------------------------------------------------------ |
+   | Project name    | `tanstack-convex-starter`, the `name` in `apps/web/cloudflare.config.ts` |
+   | Root directory  | `apps/web`                                                               |
+   | Build command   | `bun run build:cloudflare`                                               |
+   | Deploy command  | `bunx cf deploy --prebuilt`                                              |
+   | Preview command | `bunx cf previews deploy --prebuilt`                                     |
+   | Build variables | `BUN_VERSION` = `1.4.4`, `SKIP_DEPENDENCY_INSTALL` = `1`                 |
+   | Build secrets   | `CONVEX_DEPLOY_KEY`, `CONVEX_PREVIEW_DEPLOY_KEY`                         |
 
    Then check that Settings > Build > Branch control has `main` as the production branch
    and Enable Preview Builds turned on. The commands use `bunx`, not the default `npx`,
@@ -218,8 +218,12 @@ repo root, then runs `convex deploy`, which pushes the Convex functions and buil
 with `VITE_CONVEX_URL` pointing at them. On `main` it uses `CONVEX_DEPLOY_KEY` and the
 production deployment. On any other branch it uses `CONVEX_PREVIEW_DEPLOY_KEY`, which
 creates a Convex preview deployment named after the branch and reuses it on later pushes.
-Cloudflare then runs the deploy command on `main` and the preview command elsewhere, and
-reports each build as a check on the commit.
+Off `main`, it sets `CLOUDFLARE_PREVIEW_BUILD=true`, so the build is a preview build. The
+build writes the Worker to `apps/web/.cloudflare/output/`, and Cloudflare then runs the deploy
+command on `main` and the preview command elsewhere, both with `--prebuilt` so they deploy
+that output instead of building again. Each build is reported as a check on the commit. The
+Worker's settings live in `apps/web/cloudflare.config.ts`, read by the Cloudflare Vite plugin
+2.0 beta and the `cf` CLI beta; see [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
 
 The build script runs `bun run check` and `bun run test` before `convex deploy`, so a
 failing check stops both preview and production deploys. `main` is protected: changes go in
@@ -253,18 +257,18 @@ title with `pageMeta`. Pages that need a session are `noindex`, and
 
 GitHub Actions runs these on every pull request and push to `main`:
 
-| Check       | Workflow     | What it does                                                                                                                                                                                       |
-| ----------- | ------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `audit`     | `ci.yml`     | `bun audit` on `bun.lock`, also every Monday. Fails on high or critical advisories in production dependencies; advisories in dev tooling (wrangler, the shadcn CLI…) only go to the job summary    |
-| `workflows` | `ci.yml`     | [zizmor](https://docs.zizmor.sh) audits the workflows: broad permissions, unpinned actions, credentials left in checkouts, template injection                                                      |
-| `analyze`   | `codeql.yml` | [CodeQL](https://codeql.github.com) scans the TypeScript and the workflows. Results go to Security > Code scanning. Free on public repos; skipped on private ones without GitHub Advanced Security |
+| Check       | Workflow     | What it does                                                                                                                                                                                              |
+| ----------- | ------------ | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `audit`     | `ci.yml`     | `bun audit` on `bun.lock`, also every Monday. Fails on high or critical advisories in production dependencies; advisories in dev tooling (the Cloudflare CLI, the shadcn CLI…) only go to the job summary |
+| `workflows` | `ci.yml`     | [zizmor](https://docs.zizmor.sh) audits the workflows: broad permissions, unpinned actions, credentials left in checkouts, template injection                                                             |
+| `analyze`   | `codeql.yml` | [CodeQL](https://codeql.github.com) scans the TypeScript and the workflows. Results go to Security > Code scanning. Free on public repos; skipped on private ones without GitHub Advanced Security        |
 
 To accept an advisory that doesn't affect the app, add `--ignore=<GHSA id>` to the audit
 step in `ci.yml` with a comment saying why. Workflow actions are pinned to commit SHAs, and
 Renovate keeps them current. GitHub's secret scanning and push protection are on for the
 repo in its settings; they aren't workflows.
 
-To deploy production by hand instead: `bunx wrangler login` in `apps/web`, then
+To deploy production by hand instead: sign in with `bunx cf auth` in `apps/web`, then
 `CONVEX_DEPLOY_KEY=... bun run --cwd packages/backend deploy && bun run --cwd apps/web deploy`.
 
 ## Dependency updates

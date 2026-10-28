@@ -3,10 +3,11 @@
 // failing check stops the deploy. Then runs `convex deploy`, which pushes the Convex
 // functions and builds apps/web with VITE_CONVEX_URL pointing at them:
 //   - production branch (PRODUCTION_BRANCH, default main): CONVEX_DEPLOY_KEY, a production
-//     deploy key. Workers Builds then runs `wrangler deploy`.
+//     deploy key. Workers Builds then runs `cf deploy --prebuilt`.
 //   - any other branch: CONVEX_PREVIEW_DEPLOY_KEY, a preview deploy key. Convex creates a
-//     preview deployment named after the branch, and reuses it on later pushes. Workers
-//     Builds then runs `wrangler preview`.
+//     preview deployment named after the branch, and reuses it on later pushes. The app is
+//     built as a preview (CLOUDFLARE_PREVIEW_BUILD), and Workers Builds then runs
+//     `cf previews deploy --prebuilt`.
 import { spawnSync } from "node:child_process";
 import { join } from "node:path";
 
@@ -47,5 +48,9 @@ run(
     "deploy",
     ...(isProduction ? [] : ["--preview-name", branch]),
   ],
-  { ...process.env, CONVEX_DEPLOY_KEY: deployKey },
+  {
+    ...process.env,
+    CONVEX_DEPLOY_KEY: deployKey,
+    ...(isProduction ? {} : { CLOUDFLARE_PREVIEW_BUILD: "true" }),
+  },
 );

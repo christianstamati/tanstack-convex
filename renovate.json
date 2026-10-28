@@ -36,7 +36,7 @@
       "groupName": "tanstack"
     },
     {
-      "matchPackageNames": ["wrangler", "@cloudflare/**"],
+      "matchPackageNames": ["cf", "@cloudflare/**"],
       "groupName": "cloudflare"
     },
     {

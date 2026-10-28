@@ -36,6 +36,29 @@ remove the ones that are fixed.
   imports a `.wasm` file that Vitest can't load (the `wasm-module` plugin in
   `packages/backend/vite.config.ts`).
 
+## Limits of the Cloudflare betas
+
+The web app builds with `@cloudflare/vite-plugin` 2.0.0-beta.v.6 and deploys with the `cf` CLI
+1.0.0-beta.24, both pinned exactly. Version 1.65.0 of the plugin pinned a miniflare with
+undici 7.29.1, which has 4 high-severity advisories. The beta's miniflare uses 7.30.1.
+
+- **Deploys through `cf` haven't been tried.** The repo isn't connected to Workers Builds yet.
+  `bunx cf deploy --prebuilt --dry-run` packages the build, and `vp preview` serves it, but
+  neither a production nor a preview deploy has run. `cf` reads `CLOUDFLARE_API_TOKEN` and
+  `CLOUDFLARE_ACCOUNT_ID` like Wrangler; check that Workers Builds provides them.
+- **The plugin no longer reads `wrangler.jsonc`.** The Worker's settings are in
+  `apps/web/cloudflare.config.ts`, and the build writes Cloudflare's build output to
+  `apps/web/.cloudflare/output/` instead of a `dist/server/wrangler.json`. `wrangler deploy`
+  can't deploy it.
+- **`cf deploy` without `--prebuilt` fails here.** It builds with `npx vite build`, which npm
+  refuses in a repo whose `devEngines` names Bun. Build with `bun run build`, then deploy
+  with `--prebuilt`.
+- **Preview builds need `CLOUDFLARE_PREVIEW_BUILD=true`.** `scripts/cloudflare-build.ts` sets
+  it off the production branch; without it, `cf previews deploy --prebuilt` has no preview
+  build to deploy.
+
+When the plugin 2.0 and `cf` are stable, move to the stable versions and check each item again.
+
 ## Not built yet
 
 - **Change password and change email.** The beta has `changePassword`, `startChangeEmail` and
