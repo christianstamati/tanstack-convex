@@ -5,8 +5,12 @@ import { useState } from "react";
 import { AuthCard, Field, FormError } from "#/components/auth-card";
 import { api } from "#/lib/api";
 import { authErrorMessage } from "#/lib/auth";
+import { pageTitle } from "#/lib/title";
 
-export const Route = createFileRoute("/forgot-password")({ component: ForgotPassword });
+export const Route = createFileRoute("/forgot-password")({
+  head: () => ({ meta: [pageTitle("Forgot your password")] }),
+  component: ForgotPassword,
+});
 
 function ForgotPassword() {
   const { startPasswordRecovery, pending } = useStartPasswordRecovery(api.auth);

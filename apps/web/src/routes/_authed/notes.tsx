@@ -14,10 +14,12 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import { api } from "#/lib/api";
 import { attempt } from "#/lib/errors";
+import { pageTitle } from "#/lib/title";
 
 const notesQuery = convexQuery(api.notes.list);
 
 export const Route = createFileRoute("/_authed/notes")({
+  head: () => ({ meta: [pageTitle("Notes")] }),
   // Fetched during SSR as the user, then kept live by the Convex subscription.
   loader: ({ context }) => context.queryClient.query({ ...notesQuery, staleTime: "static" }),
   component: Notes,

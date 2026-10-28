@@ -20,10 +20,12 @@ import { TanStackDevtools } from "@tanstack/react-devtools";
 import { Button, buttonVariants } from "@workspace/ui/components/button";
 import { Toaster } from "@workspace/ui/components/sonner";
 import { ThemeProvider, themeScript } from "@workspace/ui/components/theme-provider";
+import type { ReactNode } from "react";
 import { toast } from "sonner";
 import { ThemeToggle } from "#/components/theme-toggle";
 import { meQuery } from "#/lib/auth";
 import { getTheme } from "#/lib/theme";
+import { APP_NAME } from "#/lib/title";
 
 import appCss from "@workspace/ui/globals.css?url";
 
@@ -58,7 +60,7 @@ export const Route = createRootRouteWithContext<{
         content: "width=device-width, initial-scale=1",
       },
       {
-        title: "tanstack-convex-starter",
+        title: APP_NAME,
       },
     ],
     links: [
@@ -66,51 +68,75 @@ export const Route = createRootRouteWithContext<{
         rel: "stylesheet",
         href: appCss,
       },
+      {
+        rel: "icon",
+        type: "image/svg+xml",
+        href: "/favicon.svg",
+      },
     ],
   }),
+  // The document. It renders even when this route's beforeLoad throws, which `component` doesn't,
+  // so the error page still gets its styles and scripts.
+  shellComponent: Document,
   component: Root,
 });
+
+function Document({ children }: { children: ReactNode }) {
+  return (
+    // The theme script sets the class and color-scheme before React hydrates.
+    <html lang="en" suppressHydrationWarning>
+      <head>
+        <ScriptOnce>{themeScript}</ScriptOnce>
+        <HeadContent />
+      </head>
+      <body>
+        {children}
+        <TanStackDevtools
+          config={{
+            position: "bottom-right",
+          }}
+          plugins={[
+            {
+              name: "Tanstack Router",
+              render: <TanStackRouterDevtoolsPanel />,
+            },
+          ]}
+        />
+        <Scripts />
+      </body>
+    </html>
+  );
+}
 
 function Root() {
   const { convexQueryClient, token, theme } = Route.useRouteContext();
   return (
     <SessionProvider client={convexQueryClient.convexClient} token={token}>
       <ThemeProvider initialTheme={theme}>
-        {/* The theme script sets the class and color-scheme before React hydrates. */}
-        <html lang="en" suppressHydrationWarning>
-          <head>
-            <ScriptOnce>{themeScript}</ScriptOnce>
-            <HeadContent />
-          </head>
-          <body>
-            <Header />
-            <Outlet />
-            <Toaster />
-            <TanStackDevtools
-              config={{
-                position: "bottom-right",
-              }}
-              plugins={[
-                {
-                  name: "Tanstack Router",
-                  render: <TanStackRouterDevtoolsPanel />,
-                },
-              ]}
-            />
-            <Scripts />
-          </body>
-        </html>
+        <Header />
+        <Outlet />
+        {/* Inside ThemeProvider: toasts follow the chosen theme. */}
+        <Toaster />
       </ThemeProvider>
     </SessionProvider>
   );
 }
 
+const navLink = {
+  className: "text-muted-foreground hover:text-foreground",
+  activeProps: { className: "text-foreground" },
+};
+
 function Header() {
   return (
     <header className="mx-auto flex max-w-xl flex-wrap items-center justify-between gap-4 p-6 pb-0">
       <nav className="flex gap-4 text-sm font-medium">
-        <Link to="/">Home</Link>
-        <Link to="/notes">Notes</Link>
+        <Link to="/" activeOptions={{ exact: true }} {...navLink}>
+          Home
+        </Link>
+        <Link to="/notes" {...navLink}>
+          Notes
+        </Link>
       </nav>
       <div className="flex items-center gap-3">
         <ThemeToggle />

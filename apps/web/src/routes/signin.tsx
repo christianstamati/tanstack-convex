@@ -5,8 +5,10 @@ import { useState } from "react";
 import { AuthCard, Field, FormError, PasswordField } from "#/components/auth-card";
 import { api } from "#/lib/api";
 import { AFTER_SIGN_IN, authErrorMessage, validateNext } from "#/lib/auth";
+import { pageTitle } from "#/lib/title";
 
 export const Route = createFileRoute("/signin")({
+  head: () => ({ meta: [pageTitle("Sign in")] }),
   validateSearch: validateNext,
   component: SignIn,
 });

@@ -5,8 +5,12 @@ import { useState } from "react";
 import { AuthCard, Field, FormError, PasswordField } from "#/components/auth-card";
 import { api } from "#/lib/api";
 import { authErrorMessage } from "#/lib/auth";
+import { pageTitle } from "#/lib/title";
 
-export const Route = createFileRoute("/signup")({ component: SignUp });
+export const Route = createFileRoute("/signup")({
+  head: () => ({ meta: [pageTitle("Sign up")] }),
+  component: SignUp,
+});
 
 function SignUp() {
   const { signUp, pending } = useSignUpWithEmailPassword(api.auth);
