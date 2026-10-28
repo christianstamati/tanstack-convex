@@ -15,7 +15,7 @@ feature, a private notes list, to show the wiring end to end.
 | Auth     | Convex Auth 2.0 beta, email and password, sessions in httpOnly cookies                  |
 | UI       | shadcn/ui on Base UI and Tailwind CSS v4 in `packages/ui`. Nova, neutral, Lucide, Geist |
 | Tests    | Vitest, with convex-test for Convex functions                                           |
-| CI       | The Cloudflare build: check, test, build, then deploy                                   |
+| CI       | GitHub Actions and the Cloudflare build: check, test, build. Renovate for updates       |
 | Deploy   | Cloudflare Workers Builds for the web app, Convex Cloud for the backend, with previews  |
 
 The backend follows
@@ -212,16 +212,60 @@ creates a Convex preview deployment named after the branch and reuses it on late
 Cloudflare then runs the deploy command on `main` and the preview command elsewhere, and
 reports each build as a check on the commit.
 
-There is no separate CI. The build script runs `bun run check` and `bun run test` before
-`convex deploy`, so a failing check stops both preview and production deploys. `main` is
-protected: changes go in through a pull request, and the PR can only merge once its
-Cloudflare build (the `Workers Builds: tanstack-convex-starter` check) passes. Each PR gets a
-Cloudflare preview, and merging deploys production. Admins can still push to `main`
-directly; the build still runs the checks, but nothing blocks the push itself. `bun run dev` and `vp preview` run the app in
-workerd, the Workers runtime, so what you test locally is what deploys.
+The build script runs `bun run check` and `bun run test` before `convex deploy`, so a
+failing check stops both preview and production deploys. `main` is protected: changes go in
+through a pull request, and the PR can only merge once its Cloudflare build (the
+`Workers Builds: tanstack-convex-starter` check) passes. Each PR gets a Cloudflare preview,
+and merging deploys production. Admins can still push to `main` directly; the build still
+runs the checks, but nothing blocks the push itself. `bun run dev` and `vp preview` run the
+app in workerd, the Workers runtime, so what you test locally is what deploys.
+
+GitHub Actions also runs `bun run ready` on every pull request and push to `main`
+(`.github/workflows/ci.yml`, the `ready` check). It needs no secrets and deploys nothing, so
+it checks pull requests from forks and copies of the repo that aren't connected to
+Cloudflare, and it builds the app without creating a Convex preview.
+
+## Security checks
+
+GitHub Actions runs these on every pull request and push to `main`:
+
+| Check       | Workflow     | What it does                                                                                                                                                                                       |
+| ----------- | ------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `audit`     | `ci.yml`     | `bun audit` on `bun.lock`, also every Monday. Fails on high or critical advisories in production dependencies; advisories in dev tooling (wrangler, the shadcn CLI…) only go to the job summary    |
+| `workflows` | `ci.yml`     | [zizmor](https://docs.zizmor.sh) audits the workflows: broad permissions, unpinned actions, credentials left in checkouts, template injection                                                      |
+| `analyze`   | `codeql.yml` | [CodeQL](https://codeql.github.com) scans the TypeScript and the workflows. Results go to Security > Code scanning. Free on public repos; skipped on private ones without GitHub Advanced Security |
+
+To accept an advisory that doesn't affect the app, add `--ignore=<GHSA id>` to the audit
+step in `ci.yml` with a comment saying why. Workflow actions are pinned to commit SHAs, and
+Renovate keeps them current. GitHub's secret scanning and push protection are on for the
+repo in its settings; they aren't workflows.
 
 To deploy production by hand instead: `bunx wrangler login` in `apps/web`, then
 `CONVEX_DEPLOY_KEY=... bun run --cwd packages/backend deploy && bun run --cwd apps/web deploy`.
+
+## Dependency updates
+
+[Renovate](https://docs.renovatebot.com) opens pull requests that update the dependencies,
+Node (`.node-version`), Bun (`packageManager` and `devEngines`) and the GitHub Actions, on
+Monday mornings. To turn it on, install the [Renovate GitHub App](https://github.com/apps/renovate)
+on the repo and merge the onboarding PR it opens. `renovate.json` holds the rules:
+
+- Related packages update together in one PR: `convex`, `tanstack`, `cloudflare`,
+  `vite-plus`.
+- Convex Auth's beta and its TanStack Start adapter never update on their own. They're
+  listed on the Dependency Dashboard issue, and a PR opens only when you tick them there.
+- A Convex update can change `packages/backend/convex/_generated/`, which CI doesn't
+  regenerate. Run `bun run setup` on the branch and commit any change before merging.
+- Renovate doesn't read Bun's `workspaces.catalog` yet, so a custom rule tracks the Vite+
+  versions in it, but can't update `bun.lock` for them. Run `bun install` on the branch and
+  push the lockfile.
+
+- Security fixes open right away, whatever the schedule. Renovate checks the
+  [OSV](https://osv.dev) database, so this works without GitHub's Dependabot alerts.
+- Workflow actions are pinned to commit SHAs and update together in one PR, along with the
+  zizmor version in `ci.yml`.
+
+Each Renovate branch also gets a Cloudflare preview and a Convex preview deployment.
 
 ## Remove the example feature
 

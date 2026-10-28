@@ -15,7 +15,7 @@
         "@convex-dev/auth": "2.0.0-beta.0",
         "@convex-dev/react-query": "^0.1.0",
         "@cs-stack/convex-errors": "^0.1.2",
-        "@samebase/convex-auth-tanstack-start": "^0.1.1",
+        "@samebase/convex-auth-tanstack-start": "0.1.1",
         "@tailwindcss/vite": "^4.1.18",
         "@tanstack/react-devtools": "0.10.13",
         "@tanstack/react-query": "^5.105.0",
