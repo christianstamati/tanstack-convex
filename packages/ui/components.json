@@ -11,11 +11,11 @@
   },
   "iconLibrary": "lucide",
   "aliases": {
-    "components": "@tanstack-convex-starter/ui/components",
-    "utils": "@tanstack-convex-starter/ui/lib/utils",
-    "hooks": "@tanstack-convex-starter/ui/hooks",
-    "lib": "@tanstack-convex-starter/ui/lib",
-    "ui": "@tanstack-convex-starter/ui/components"
+    "components": "@workspace/ui/components",
+    "utils": "@workspace/ui/lib/utils",
+    "hooks": "@workspace/ui/hooks",
+    "lib": "@workspace/ui/lib",
+    "ui": "@workspace/ui/components"
   },
   "rtl": false,
   "menuColor": "default",

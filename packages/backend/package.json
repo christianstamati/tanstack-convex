@@ -1,5 +1,5 @@
 {
-  "name": "@tanstack-convex-starter/backend",
+  "name": "@workspace/backend",
   "version": "0.0.0",
   "private": true,
   "type": "module",

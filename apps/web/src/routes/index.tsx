@@ -1,4 +1,4 @@
-import { buttonVariants } from "@tanstack-convex-starter/ui/components/button";
+import { buttonVariants } from "@workspace/ui/components/button";
 import { createFileRoute, Link } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/")({ component: Home });

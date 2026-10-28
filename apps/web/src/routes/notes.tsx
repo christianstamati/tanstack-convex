@@ -1,13 +1,13 @@
 // Example feature: delete this file (and the link on the home page) to remove it.
-import { Button } from "@tanstack-convex-starter/ui/components/button";
+import { Button } from "@workspace/ui/components/button";
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from "@tanstack-convex-starter/ui/components/card";
-import { Input } from "@tanstack-convex-starter/ui/components/input";
+} from "@workspace/ui/components/card";
+import { Input } from "@workspace/ui/components/input";
 import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery } from "convex/react";
 import { useState } from "react";

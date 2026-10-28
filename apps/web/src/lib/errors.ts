@@ -1,5 +1,5 @@
 import { createAttempt } from "@cs-stack/convex-errors";
-import { errors } from "@tanstack-convex-starter/backend/convex/lib/errors";
+import { errors } from "@workspace/backend/convex/lib/errors";
 import { toast } from "sonner";
 
 /** The app's error codes, from convex/lib/errors.ts. Use `errors.is` to handle one error differently. */

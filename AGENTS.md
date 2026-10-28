@@ -23,9 +23,9 @@ scripts/           setup.ts, sync-env.ts, cloudflare-build.ts
 convex.json        Points the Convex CLI at packages/backend/convex/ when run from the root
 ```
 
-Workspace packages use the `@tanstack-convex-starter/` scope. The web app imports the Convex API
-through `#/lib/api` (which wraps `@tanstack-convex-starter/backend/convex/_generated/api`) and
-components as `@tanstack-convex-starter/ui/components/<name>`.
+Workspace packages use the `@workspace/` scope. The web app imports the Convex API
+through `#/lib/api` (which wraps `@workspace/backend/convex/_generated/api`) and
+components as `@workspace/ui/components/<name>`.
 Inside apps/web, `#/` maps to `src/`.
 
 ## Commands
@@ -53,7 +53,7 @@ The pre-commit hook runs `vp check --fix` on staged files. Don't skip it with `-
   A Base UI `Button` keeps `role="button"` even when it renders a link, so for navigation
   use `<Link className={buttonVariants()}>`.
 - Each app and package has its own tsconfig.json that extends
-  `@tanstack-convex-starter/tsconfig/base.json` or `react.json` and includes only its own
+  `@workspace/tsconfig/base.json` or `react.json` and includes only its own
   files. The root tsconfig.json covers only `scripts/` and `vite.config.ts`. Don't let two
   tsconfigs include the same file: the editor can check it with the wrong options.
 - There is no auth. Every Convex function is public, so anyone with the deployment URL can
