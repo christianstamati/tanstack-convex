@@ -42,10 +42,15 @@ The web app builds with `@cloudflare/vite-plugin` 2.0.0-beta.v.6 and deploys wit
 1.0.0-beta.24, both pinned exactly. Version 1.65.0 of the plugin pinned a miniflare with
 undici 7.29.1, which has 4 high-severity advisories. The beta's miniflare uses 7.30.1.
 
-- **Deploys through `cf` haven't been tried.** The repo isn't connected to Workers Builds yet.
-  `bunx cf deploy --prebuilt --dry-run` packages the build, and `vp preview` serves it, but
-  neither a production nor a preview deploy has run. `cf` reads `CLOUDFLARE_API_TOKEN` and
-  `CLOUDFLARE_ACCOUNT_ID` like Wrangler; check that Workers Builds provides them.
+- **Deploys through `cf` work.** Production was first deployed by hand with
+  `bunx cf deploy --prebuilt`, and a Workers Builds preview with `bunx cf previews deploy
+  --prebuilt` deployed a branch against its own Convex preview deployment.
+- **Connecting the repo fills in Cloudflare's defaults.** The dashboard sets `bun run build`,
+  `npx wrangler deploy` (`npx wrangler preview` for previews) and root `/` on both the
+  Production and Previews Base tabs. Replace them with the README's settings on both tabs.
+- **A branch's preview keeps the settings it was created with.** Each branch gets its own
+  copy of Previews Base on its first push. A branch pushed before Previews Base was set up
+  keeps the defaults and no secrets, so its builds fail; push the work to a new branch.
 - **The plugin no longer reads `wrangler.jsonc`.** The Worker's settings are in
   `apps/web/cloudflare.config.ts`, and the build writes Cloudflare's build output to
   `apps/web/.cloudflare/output/` instead of a `dist/server/wrangler.json`. `wrangler deploy`

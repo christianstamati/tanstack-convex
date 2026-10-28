@@ -206,9 +206,12 @@ Cloudflare MCP servers can't deploy, so use the `convex` and `cf` CLIs.
    dashboard, connect the repo under the Worker's Settings > Build with the settings in the
    README's table, and add CONVEX_DEPLOY_KEY (from that file) and CONVEX_PREVIEW_DEPLOY_KEY
    as build secrets. Never paste keys into a dashboard yourself.
-When I say it's connected, open a pull request and check that its build posts a Preview URL
-and creates a Convex preview deployment. Tell me what you ran, the URLs, and anything that
-failed.
+When I say it's connected, check with the `cf builds` commands that both the production and
+the previews build settings match the README's table (connecting fills in Cloudflare's
+defaults) and that each has its deploy key, by name only. Fix the settings, not the secrets.
+Then push a new branch, open a pull request, and check that its build posts a Preview URL,
+creates a Convex preview deployment, and that the preview's /health answers ok. Tell me what
+you ran, the URLs, and anything that failed.
 ```
 
 ### By hand
@@ -243,9 +246,12 @@ failed.
    | Build variables | `BUN_VERSION` = `1.4.4`, `SKIP_DEPENDENCY_INSTALL` = `1`                 |
    | Build secrets   | `CONVEX_DEPLOY_KEY`, `CONVEX_PREVIEW_DEPLOY_KEY`                         |
 
-   Then check that Settings > Build > Branch control has `main` as the production branch
-   and Enable Preview Builds turned on. The commands use `bunx`, not the default `npx`,
-   because npm refuses to run in a repo whose `devEngines` names Bun.
+   Settings > Build has a Production tab and a Previews Base tab, and connecting the repo
+   fills both with Cloudflare's defaults: set both, with the preview command on Previews
+   Base. Production needs `CONVEX_DEPLOY_KEY` and Previews Base `CONVEX_PREVIEW_DEPLOY_KEY`.
+   Check that `main` is the production branch. Each branch copies Previews Base on its first
+   push, so set it up before pushing branches. The commands use `bunx`, not the default
+   `npx`, because npm refuses to run in a repo whose `devEngines` names Bun.
 
 The build command runs `scripts/cloudflare-build.ts`. It installs the workspace from the
 repo root, then runs `convex deploy`, which pushes the Convex functions and builds the app
