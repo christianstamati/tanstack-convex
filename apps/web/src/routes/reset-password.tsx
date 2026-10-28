@@ -5,11 +5,11 @@ import { useEffect, useState } from "react";
 import { AuthCard, FormError, PasswordField } from "#/components/auth-card";
 import { api } from "#/lib/api";
 import { AFTER_SIGN_IN, authErrorMessage } from "#/lib/auth";
-import { pageTitle } from "#/lib/title";
+import { pageMeta } from "#/lib/meta";
 
 // The page of the link in the password recovery email. Setting the new password signs the user in.
 export const Route = createFileRoute("/reset-password")({
-  head: () => ({ meta: [pageTitle("Reset your password")] }),
+  head: () => ({ meta: pageMeta("Reset your password") }),
   validateSearch: (search): { code: string } => ({
     code: typeof search.code === "string" ? search.code : "",
   }),

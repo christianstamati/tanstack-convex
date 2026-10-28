@@ -5,10 +5,10 @@ import { useState } from "react";
 import { AuthCard, Field, FormError } from "#/components/auth-card";
 import { api } from "#/lib/api";
 import { authErrorMessage } from "#/lib/auth";
-import { pageTitle } from "#/lib/title";
+import { pageMeta } from "#/lib/meta";
 
 export const Route = createFileRoute("/forgot-password")({
-  head: () => ({ meta: [pageTitle("Forgot your password")] }),
+  head: () => ({ meta: pageMeta("Forgot your password") }),
   component: ForgotPassword,
 });
 

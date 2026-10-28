@@ -1,3 +1,4 @@
+import rateLimiter from "@convex-dev/rate-limiter/test";
 import { convexTest } from "convex-test";
 import { describe, expect, test } from "vite-plus/test";
 import { api } from "../../lib/api.refs";
@@ -8,6 +9,7 @@ import { modules } from "../../test.setup";
 /** A test backend and a signed-in user. Convex Auth's tokens carry the user id as `subject`. */
 async function setup() {
   const t = convexTest(schema, modules);
+  rateLimiter.register(t);
   const signIn = async () => {
     const userId = await t.run((ctx) => ctx.db.insert("users", {}));
     return t.withIdentity({ subject: userId });
@@ -50,6 +52,18 @@ describe("notes", () => {
     const error = await other.mutation(api.notes.remove, { id }).catch((e) => e);
     expect(errors.is(error, "not_found")).toBe(true);
     expect(await user.query(api.notes.list, {})).toHaveLength(1);
+  });
+
+  test("limits how fast one user can add notes", async () => {
+    const { signIn, user } = await setup();
+    // The bucket's capacity: 10 at once.
+    for (let i = 0; i < 10; i++) await user.mutation(api.notes.create, { text: `note ${i}` });
+    const error = await user.mutation(api.notes.create, { text: "one too many" }).catch((e) => e);
+    expect(errors.is(error, "rate_limited")).toBe(true);
+
+    // Each user has their own limit.
+    const other = await signIn();
+    await other.mutation(api.notes.create, { text: "mine" });
   });
 
   test("requires a session to write", async () => {

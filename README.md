@@ -158,6 +158,15 @@ integration yet; that package is the interim one, and it requires exactly this b
   `'{"includeRecent": true}'` to skip the 24-hour wait, which also removes anyone who just
   signed up and hasn't opened their link yet.
 
+### Rate limits
+
+Convex Auth limits sign-in attempts and auth emails by itself. Limits on the app's own functions
+live in `packages/backend/convex/lib/rateLimits.ts`, on the
+[rate limiter component](https://www.convex.dev/components/rate-limiter). A function calls
+`enforceRateLimit(ctx, name, ctx.userId)` before doing its work, and over the limit it throws
+`rate_limited`, which the web app shows as "Too many requests. Try again in N seconds." The
+example: `notes.create` lets a user add 10 notes at once, then 30 a minute.
+
 To send real emails, create a [Resend](https://resend.com) API key, verify a domain, and set
 `RESEND_API_KEY` and `AUTH_EMAIL_FROM` (such as `My App <auth@example.com>`) on the
 deployment. Resend's default sender, `onboarding@resend.dev`, only delivers to your own
@@ -225,6 +234,21 @@ GitHub Actions also runs `bun run ready` on every pull request and push to `main
 it checks pull requests from forks and copies of the repo that aren't connected to
 Cloudflare, and it builds the app without creating a Convex preview.
 
+### Health check
+
+`GET /health` on the web app answers `{"status":"ok","convex":"up"}` with status 200 while the
+Worker runs and reaches Convex, and `{"status":"degraded","convex":"unreachable"}` with 503 when
+Convex doesn't answer within 3 seconds. Point an uptime monitor at it. It asks the Convex
+deployment's `/version`, so a check runs no Convex function.
+
+### Search and link previews
+
+`apps/web/src/lib/meta.ts` holds the app's name and description, which every page's tags start
+from: the description and the Open Graph tags that link previews read. Each page sets its own
+title with `pageMeta`. Pages that need a session are `noindex`, and
+`apps/web/public/robots.txt` allows the rest. To show an image in link previews, set
+`og:image` in `siteMeta()` to an absolute URL of a 1200×630 PNG.
+
 ## Security checks
 
 GitHub Actions runs these on every pull request and push to `main`:
@@ -274,6 +298,7 @@ Delete these files and lines, then run `bun run check`:
 - `packages/backend/convex/models/notes/`, `packages/backend/convex/api/notes.ts` and
   `packages/backend/convex/tests/notes/`
 - the `notes` table and its import in `packages/backend/convex/schema.ts`
+- the `createNote` limit in `packages/backend/convex/lib/rateLimits.ts`
 - `apps/web/src/routes/_authed/notes.tsx`
 - the Notes links in `apps/web/src/routes/index.tsx` and `apps/web/src/routes/__root.tsx`
 - `AFTER_SIGN_IN` in `apps/web/src/lib/auth.ts`: point it at your first private page

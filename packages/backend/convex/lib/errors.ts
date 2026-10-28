@@ -9,4 +9,6 @@ export const errors = defineErrors({
   not_found: (p: { what: "note" }) => `That ${p.what} doesn't exist anymore.`,
   invalid_length: (p: { what: "note" | "name"; min: number; max: number }) =>
     `A ${p.what} must be ${p.min} to ${p.max} characters.`,
+  rate_limited: (p: { retryAfterSeconds: number }) =>
+    `Too many requests. Try again in ${p.retryAfterSeconds} second${p.retryAfterSeconds === 1 ? "" : "s"}.`,
 });

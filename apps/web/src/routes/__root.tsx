@@ -25,7 +25,7 @@ import { toast } from "sonner";
 import { ThemeToggle } from "#/components/theme-toggle";
 import { meQuery } from "#/lib/auth";
 import { getTheme } from "#/lib/theme";
-import { APP_NAME } from "#/lib/title";
+import { siteMeta } from "#/lib/meta";
 
 import appCss from "@workspace/ui/globals.css?url";
 
@@ -59,9 +59,7 @@ export const Route = createRootRouteWithContext<{
         name: "viewport",
         content: "width=device-width, initial-scale=1",
       },
-      {
-        title: APP_NAME,
-      },
+      ...siteMeta(),
     ],
     links: [
       {

@@ -4,11 +4,11 @@ import { useEffect } from "react";
 import { AuthCard, FormError } from "#/components/auth-card";
 import { api } from "#/lib/api";
 import { AFTER_SIGN_IN, authErrorMessage } from "#/lib/auth";
-import { pageTitle } from "#/lib/title";
+import { pageMeta } from "#/lib/meta";
 
 // The page of the link in the sign-up email. Opening it verifies the email and signs the user in.
 export const Route = createFileRoute("/verify-email")({
-  head: () => ({ meta: [pageTitle("Verify your email")] }),
+  head: () => ({ meta: pageMeta("Verify your email") }),
   validateSearch: (search): { code: string } => ({
     code: typeof search.code === "string" ? search.code : "",
   }),
