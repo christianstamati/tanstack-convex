@@ -176,8 +176,42 @@ Resend account's address.
 
 Cloudflare Workers Builds builds and deploys the app from the GitHub repo. Every push to
 `main` deploys production. Every other branch gets a preview: a Cloudflare Preview URL,
-posted on its pull request, backed by its own Convex preview deployment. Nothing has been
-deployed yet. When you're ready:
+posted on its pull request, backed by its own Convex preview deployment.
+
+### With a coding agent
+
+Log in to Convex and Cloudflare first, so the agent never signs in for you:
+`cd packages/backend && bunx convex login`, then `cd apps/web && bunx cf auth login`. Then
+paste:
+
+```text
+Deploy this app to my Convex Cloud and Cloudflare accounts. Read AGENTS.md and the Deploy
+section of README.md first. I'm logged in to both CLIs; don't log in or out. The Convex and
+Cloudflare MCP servers can't deploy, so use the `convex` and `cf` CLIs.
+1. If packages/backend/.env.local points at a local or anonymous deployment, run
+   `bunx convex dev --configure` in packages/backend to create a Convex Cloud project, then
+   `bun run setup` from the repo root.
+2. Find the production deployment's URL (`https://<name>.<region>.convex.cloud`) with the
+   Convex MCP `status` tool on packages/backend, or in the dashboard. Build the web app
+   against it: `VITE_CONVEX_URL=<url> bun run --cwd apps/web build`, then run
+   `bunx cf deploy --prebuilt` in apps/web. It prints the workers.dev URL; SITE_URL needs it.
+3. From the repo root, run `bun run auth:env --prod --site-url <workers.dev URL>` and
+   `bun run auth:env --preview --site-url <workers.dev URL>`. Then run `bunx convex deploy -y`
+   in packages/backend.
+4. Check that <workers.dev URL>/health answers {"status":"ok","convex":"up"} and /signin
+   loads without console errors. Don't sign up on production; I'll do that.
+5. Create the production deploy key with `bunx convex deployment token create
+   workers-builds-prod --prod --save-env <a file outside the repo>`, and don't print it.
+6. Stop and give me the steps that need me: generate a Preview deploy key in the Convex
+   dashboard, connect the repo under the Worker's Settings > Build with the settings in the
+   README's table, and add CONVEX_DEPLOY_KEY (from that file) and CONVEX_PREVIEW_DEPLOY_KEY
+   as build secrets. Never paste keys into a dashboard yourself.
+When I say it's connected, open a pull request and check that its build posts a Preview URL
+and creates a Convex preview deployment. Tell me what you ran, the URLs, and anything that
+failed.
+```
+
+### By hand
 
 1. Link a Convex Cloud project: `cd packages/backend && bunx convex login && bunx convex dev --configure`.
    This replaces the local deployment in `packages/backend/.env.local`. Run
