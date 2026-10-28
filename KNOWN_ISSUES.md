@@ -52,6 +52,10 @@ remove the ones that are fixed.
 - **Previews share one `SITE_URL`**, so the links in a preview deployment's emails open
   production's origin. Change a preview's own `SITE_URL` in the Convex dashboard to test its
   emails.
-- **The auth pages haven't run in a browser yet.** The flows are tested with convex-test and
-  over HTTP against a local deployment, not the React side: hydration, the hooks, and the
-  redirects after signing in and out.
+- **The auth pages were checked by hand in one browser, not automated.** Sign-up, verification,
+  sign-in, sign-out, password reset and sign-out in a second tab all work on port 3000. Open:
+  - A verification or reset link that was already used says "Open the link in the browser where
+    you requested it", not "expired or already used".
+  - Forgot-password says "No account uses that email", which tells anyone which addresses have
+    accounts.
+  - A second browser, where the link must not work, is not tested yet.

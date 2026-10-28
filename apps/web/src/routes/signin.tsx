@@ -12,7 +12,8 @@ export const Route = createFileRoute("/signin")({
 });
 
 function SignIn() {
-  const { next } = Route.useSearch();
+  // Checked again here: the search the component reads can still hold the raw `next`.
+  const { next } = validateNext(Route.useSearch());
   const { signIn, pending } = useSignInWithEmailPassword(api.auth);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
