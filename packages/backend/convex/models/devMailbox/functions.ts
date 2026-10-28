@@ -1,5 +1,6 @@
 import { v } from "convex/values";
-import { internalQuery, type MutationCtx } from "../../_generated/server";
+import { internal } from "../../lib/api.refs";
+import { internalMutation, internalQuery, type MutationCtx } from "../../_generated/server";
 import schema from "../../schema";
 
 /** Stores an email that wasn't sent, one row per recipient. */
@@ -45,4 +46,24 @@ const list = internalQuery({
   },
 });
 
-export const devMailboxInternal = { latest, list };
+/**
+ * Deletes every stored email, in batches that reschedule themselves. From packages/backend:
+ *
+ *   bunx convex run internal/devMailbox:clear
+ */
+const clear = internalMutation({
+  args: {},
+  returns: v.null(),
+  handler: async (ctx) => {
+    const batch = await ctx.db.query("devMailbox").take(500);
+    for (const email of batch) {
+      await ctx.db.delete(email._id);
+    }
+    if (batch.length === 500) {
+      await ctx.scheduler.runAfter(0, internal.devMailbox.clear, {});
+    }
+    return null;
+  },
+});
+
+export const devMailboxInternal = { latest, list, clear };
