@@ -22,7 +22,7 @@ if (!convexUrl) {
 
 const lines = existsSync(webEnv)
   ? readFileSync(webEnv, "utf8")
-      .split("\n")
+      .split(/\r?\n/)
       .filter((line) => line !== "" && !line.startsWith("VITE_CONVEX_URL="))
   : [];
 lines.push(`VITE_CONVEX_URL=${convexUrl}`);

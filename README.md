@@ -23,18 +23,61 @@ Each table's functions are defined in `convex/models/<table>/`, and `convex/api/
 re-exports the ones that make up the public API. The web app calls them as
 `api.<table>.<function>` through `apps/web/src/lib/api.ts`.
 
-## Run it locally
+## Quick start
 
-You need Bun 1.4 and Node 24. No Convex account is needed to start.
+Works on macOS, Linux and Windows (x64).
+
+### Prerequisites
+
+| Tool         | Version                       | Install                            |
+| ------------ | ----------------------------- | ---------------------------------- |
+| Git          | any recent                    | [git-scm.com](https://git-scm.com) |
+| Vite+ (`vp`) | global CLI                    | see below                          |
+| Node         | 24.22.1, from `.node-version` | installed by `vp`                  |
+| Bun          | 1.4.4, from `packageManager`  | installed by `vp`                  |
+
+Install the global `vp` CLI and let it manage Node and package managers when the installer
+asks:
 
 ```sh
-bun install
+# macOS / Linux
+curl -fsSL https://vite.plus | bash
+```
+
+```powershell
+# Windows (PowerShell), or run vp-setup.exe from https://setup.viteplus.dev
+irm https://vite.plus/ps1 | iex
+```
+
+Open a new terminal. In this repo, `node` and `bun` then resolve to the versions the
+repo pins; `vp env current` shows them. If you already have Node 24 and Bun 1.4.4
+installed yourself, you can skip `vp`: the repo's `vp` comes from `node_modules`.
+
+No Convex or Cloudflare account is needed to start.
+
+### Run it
+
+```sh
+git clone <this repo>
+cd tanstack-convex-starter
+bun install     # dependencies and the Git hooks
 bun run setup   # local Convex deployment and apps/web/.env.local
 bun run dev     # Convex + http://localhost:3000
 ```
 
 `setup` creates a Convex deployment that runs on your machine and stores its data in
-`packages/backend/.convex/`. It is safe to re-run.
+`packages/backend/.convex/`. It is safe to re-run. Open http://localhost:3000 and try the
+Notes page.
+
+The Convex CLI may ask you one of two questions. To keep developing locally:
+
+| Question                                                                                                                 | When                                                                     | Answer                                               |
+| ------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------ | ---------------------------------------------------- |
+| Welcome to Convex! Would you like to login to your account?                                                              | The first `setup`                                                        | **Start without an account (run Convex locally)**    |
+| CONVEX_DEPLOYMENT is configured with deployment …, which is not linked with your account. Would you like to link it now? | Every `setup` and `dev`, if you have logged in to Convex on this machine | **n**. **Y** moves the app to a Convex Cloud project |
+
+On Windows, use PowerShell or Windows Terminal. Git Bash works too. The Git hooks run under
+the `sh` that ships with Git for Windows.
 
 Other commands:
 

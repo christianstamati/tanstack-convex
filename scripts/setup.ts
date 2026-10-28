@@ -10,6 +10,9 @@ function run(command: string, args: string[], cwd = root) {
   return spawnSync(command, args, { cwd, stdio: "inherit" }).status === 0;
 }
 
+// The running Bun binary, not "bun" on PATH: on Windows that can be a .cmd shim (vp's or
+// npm's), which spawnSync can't run without a shell.
+const bun = process.execPath;
 const ok =
-  run("bunx", ["convex", "dev", "--once"], backendDir) && run("bun", ["scripts/sync-env.ts"]);
+  run(bun, ["x", "convex", "dev", "--once"], backendDir) && run(bun, ["scripts/sync-env.ts"]);
 process.exit(ok ? 0 : 1);
