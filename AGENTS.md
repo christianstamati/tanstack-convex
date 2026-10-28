@@ -29,6 +29,9 @@ packages/tsconfig/ Shared compiler options: base.json, and react.json for DOM an
 scripts/           setup.ts, auth-env.ts, sync-env.ts, cloudflare-build.ts
 .agents/skills/    Convex agent skills from `convex ai-files install`, also in .claude/skills/
 convex.json        Points the Convex CLI at packages/backend/convex/ when run from the root
+.github/workflows/ ci.yml (ready, audit, zizmor) and codeql.yml. Deploys stay in Workers Builds.
+                   Pin actions to a commit SHA with the version in a comment; zizmor fails otherwise
+renovate.json      Renovate's rules for dependency update PRs (see "Dependency updates" in the README)
 ```
 
 Workspace packages use the `@workspace/` scope. The web app imports the Convex API
