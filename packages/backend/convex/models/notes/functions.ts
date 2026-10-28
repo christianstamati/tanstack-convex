@@ -1,5 +1,9 @@
-import { ConvexError, v } from "convex/values";
+import { v } from "convex/values";
 import { mutation, query } from "../../_generated/server";
+import { errors } from "../../lib/errors";
+
+const MIN_LENGTH = 1;
+const MAX_LENGTH = 500;
 
 const list = query({
   args: {},
@@ -13,8 +17,8 @@ const create = mutation({
   returns: v.id("notes"),
   handler: async (ctx, { text }) => {
     const trimmed = text.trim();
-    if (trimmed.length === 0 || trimmed.length > 500) {
-      throw new ConvexError("A note must be 1 to 500 characters.");
+    if (trimmed.length < MIN_LENGTH || trimmed.length > MAX_LENGTH) {
+      throw errors.create("invalid_length", { what: "note", min: MIN_LENGTH, max: MAX_LENGTH });
     }
     return await ctx.db.insert("notes", { text: trimmed });
   },
@@ -25,7 +29,7 @@ const remove = mutation({
   returns: v.null(),
   handler: async (ctx, { id }) => {
     const note = await ctx.db.get("notes", id);
-    if (note === null) throw new ConvexError("Note not found");
+    if (note === null) throw errors.create("not_found", { what: "note" });
     await ctx.db.delete("notes", id);
     return null;
   },

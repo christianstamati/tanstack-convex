@@ -4,7 +4,8 @@
   "private": true,
   "type": "module",
   "exports": {
-    "./convex/_generated/*": "./convex/_generated/*.js"
+    "./convex/_generated/*": "./convex/_generated/*.js",
+    "./convex/lib/errors": "./convex/lib/errors.ts"
   },
   "scripts": {
     "dev": "convex dev",
@@ -13,6 +14,7 @@
     "test": "vp test run"
   },
   "dependencies": {
+    "@cs-stack/convex-errors": "^0.1.2",
     "convex": "^1.48.0"
   },
   "devDependencies": {

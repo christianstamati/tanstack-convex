@@ -12,13 +12,12 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery } from "convex/react";
 import { useState } from "react";
 import { api } from "#/lib/api";
-import { errorMessage } from "#/lib/errors";
+import { attempt } from "#/lib/errors";
 
 export const Route = createFileRoute("/notes")({ component: Notes });
 
 function Notes() {
   const [text, setText] = useState("");
-  const [error, setError] = useState<string>();
   const notes = useQuery(api.notes.list);
   const create = useMutation(api.notes.create);
   const remove = useMutation(api.notes.remove);
@@ -36,13 +35,7 @@ function Notes() {
             onSubmit={async (event) => {
               event.preventDefault();
               if (text.trim() === "") return;
-              try {
-                await create({ text });
-                setText("");
-                setError(undefined);
-              } catch (e) {
-                setError(errorMessage(e, "Couldn't add the note."));
-              }
+              if (await attempt(create({ text }), "Couldn't add the note.")) setText("");
             }}
           >
             <Input
@@ -53,7 +46,6 @@ function Notes() {
             />
             <Button type="submit">Add</Button>
           </form>
-          {error && <p className="text-sm text-destructive">{error}</p>}
           {notes === undefined ? (
             <p className="text-sm text-muted-foreground">Loading…</p>
           ) : notes.length === 0 ? (
@@ -63,7 +55,13 @@ function Notes() {
               {notes.map((note) => (
                 <li key={note._id} className="flex items-center justify-between gap-2 text-sm">
                   <span className="break-words">{note.text}</span>
-                  <Button variant="ghost" size="sm" onClick={() => void remove({ id: note._id })}>
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    onClick={() =>
+                      void attempt(remove({ id: note._id }), "Couldn't delete the note.")
+                    }
+                  >
                     Delete
                   </Button>
                 </li>

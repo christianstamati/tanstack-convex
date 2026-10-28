@@ -9,6 +9,7 @@
  */
 
 import type * as api_notes from "../api/notes.js";
+import type * as lib_errors from "../lib/errors.js";
 import type * as models_notes_functions from "../models/notes/functions.js";
 import type * as models_notes_table from "../models/notes/table.js";
 
@@ -20,6 +21,7 @@ import type {
 
 declare const fullApi: ApiFromModules<{
   "api/notes": typeof api_notes;
+  "lib/errors": typeof lib_errors;
   "models/notes/functions": typeof models_notes_functions;
   "models/notes/table": typeof models_notes_table;
 }>;
