@@ -27,6 +27,21 @@ re-exports the ones that make up the public API. The web app calls them as
 
 Works on macOS, Linux and Windows (x64).
 
+### With a coding agent
+
+Clone the repo, open a coding agent (Claude Code, Codex, Cursor…) in it and paste:
+
+```text
+Set up this repo for local development. Read AGENTS.md and the Quick start in README.md
+first. Install the global Vite+ CLI (`vp`) if it is missing, then run `bun install` and
+`CONVEX_AGENT_MODE=anonymous bun run setup` from the repo root, so Convex uses a local
+deployment without asking to log in. Start `bun run dev` in the background, check that
+http://localhost:3000 and its Notes page load, then run `bun run ready`. Don't log in to
+Convex or Cloudflare. Tell me what you ran and anything that failed.
+```
+
+Or follow the steps below yourself.
+
 ### Prerequisites
 
 | Tool         | Version                       | Install                            |
@@ -82,9 +97,10 @@ the `sh` that ships with Git for Windows.
 Other commands:
 
 ```sh
-bun run check      # format, lint, types. `vp check --fix` fixes what it can
-bun run test       # unit tests
-bun run build      # production build of apps/web
+bun run convex:dashboard  # Convex dashboard on http://127.0.0.1:6790, while `dev` runs
+bun run check             # format, lint, types. `vp check --fix` fixes what it can
+bun run test              # unit tests
+bun run build             # production build of apps/web
 ```
 
 ## Environment variables

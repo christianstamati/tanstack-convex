@@ -16,6 +16,7 @@
   "scripts": {
     "setup": "bun scripts/setup.ts",
     "dev": "bun scripts/sync-env.ts && vp run --parallel --log labeled --filter './apps/*' --filter './packages/*' dev",
+    "convex:dashboard": "vp run --filter @workspace/backend dashboard",
     "build": "vp run --filter './apps/*' build",
     "check": "vp check",
     "test": "vp run --filter './apps/*' --filter './packages/*' test",

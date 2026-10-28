@@ -32,15 +32,16 @@ Inside apps/web, `#/` maps to `src/`.
 
 Run everything from the repo root with Bun.
 
-| Command         | What it does                                                        |
-| --------------- | ------------------------------------------------------------------- |
-| `bun install`   | Install dependencies and the Vite+ git hooks                        |
-| `bun run setup` | One-time local setup: local Convex deployment and env               |
-| `bun run dev`   | Convex dev and the web dev server on http://localhost:3000          |
-| `bun run check` | Format, lint and type check (`vp check`). Fix with `vp check --fix` |
-| `bun run test`  | Unit tests (Vitest via `vp test`, convex-test for Convex)           |
-| `bun run build` | Production build of apps/web                                        |
-| `bun run ready` | Check, test and build: run before pushing                           |
+| Command                    | What it does                                                        |
+| -------------------------- | ------------------------------------------------------------------- |
+| `bun install`              | Install dependencies and the Vite+ git hooks                        |
+| `bun run setup`            | One-time local setup: local Convex deployment and env               |
+| `bun run dev`              | Convex dev and the web dev server on http://localhost:3000          |
+| `bun run convex:dashboard` | Local Convex dashboard on http://127.0.0.1:6790 (needs `dev`)       |
+| `bun run check`            | Format, lint and type check (`vp check`). Fix with `vp check --fix` |
+| `bun run test`             | Unit tests (Vitest via `vp test`, convex-test for Convex)           |
+| `bun run build`            | Production build of apps/web                                        |
+| `bun run ready`            | Check, test and build: run before pushing                           |
 
 The pre-commit hook runs `vp check --fix` on staged files. Don't skip it with `--no-verify`.
 
