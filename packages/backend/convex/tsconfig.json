@@ -12,6 +12,8 @@
     "module": "ESNext",
     "isolatedModules": true,
     "noEmit": true,
+    // Convex Auth's convex-test helpers ship as TypeScript that imports `.ts` paths.
+    "allowImportingTsExtensions": true,
     "types": ["node", "vite/client"]
   },
   "include": ["./**/*"],

@@ -1,9 +1,9 @@
 # tanstack-convex-starter
 
 A boilerplate TypeScript monorepo with a TanStack Start web app, a Convex backend and
-shadcn/ui on Base UI, set up to deploy to Cloudflare Workers. It includes one example
-feature, a notes list, to show the wiring end to end. There is no sign-in: every Convex
-function is public, so add auth before you store anything private.
+shadcn/ui on Base UI, set up to deploy to Cloudflare Workers. Users sign up with email and
+password, and pages render on the server as the signed-in user. It includes one example
+feature, a private notes list, to show the wiring end to end.
 
 ## Stack
 
@@ -12,6 +12,7 @@ function is public, so add auth before you store anything private.
 | Monorepo | Bun workspaces, Vite+ (`vp`) for format, lint, type check, tests and tasks              |
 | Frontend | TanStack Start (React) in `apps/web`, with TanStack Query                               |
 | Backend  | Convex in `packages/backend`. Functions are the API, no separate server                 |
+| Auth     | Convex Auth 2.0 beta, email and password, sessions in httpOnly cookies                  |
 | UI       | shadcn/ui on Base UI and Tailwind CSS v4 in `packages/ui`. Nova, neutral, Lucide, Geist |
 | Tests    | Vitest, with convex-test for Convex functions                                           |
 | CI       | The Cloudflare build: check, test, build, then deploy                                   |
@@ -81,8 +82,13 @@ bun run dev     # Convex + http://localhost:3000
 ```
 
 `setup` creates a Convex deployment that runs on your machine and stores its data in
-`packages/backend/.convex/`. It is safe to re-run. Open http://localhost:3000 and try the
-Notes page.
+`packages/backend/.convex/`, and sets the variables auth needs on it. It is safe to re-run,
+and needed again after pulling the change that added auth. Open http://localhost:3000, sign
+up and try the Notes page.
+
+Sign-up sends a link to verify the email. Until you set `RESEND_API_KEY` (see
+[Auth](#auth)), emails aren't sent: the email and its link appear in the output of
+`bun run dev`. Open the link in the browser you signed up in.
 
 The Convex CLI may ask you one of two questions. To keep developing locally:
 
@@ -98,6 +104,7 @@ Other commands:
 
 ```sh
 bun run convex:dashboard  # Convex dashboard on http://127.0.0.1:6790, while `dev` runs
+bun run convex:reset      # delete every document on the dev deployment, components included
 bun run check             # format, lint, types. `vp check --fix` fixes what it can
 bun run test              # unit tests
 bun run build             # production build of apps/web
@@ -115,8 +122,45 @@ bun run build             # production build of apps/web
 | `CONVEX_DEPLOY_KEY`             | Workers Builds secret               | you                                    | Deploys `main` to Convex production       |
 | `CONVEX_PREVIEW_DEPLOY_KEY`     | Workers Builds secret               | you                                    | Deploys other branches to Convex previews |
 
-Env vars a Convex function reads live on the deployment, not in a file. Set them from
-`packages/backend` with `bunx convex env set NAME value`.
+Env vars a Convex function reads live on the deployment, not in a file. They are declared in
+`packages/backend/convex/convex.config.ts`, and a push fails while a required one is missing.
+Set them from `packages/backend` with `bunx convex env set NAME value`.
+
+| Variable                        | Required | Set by             | Purpose                                       |
+| ------------------------------- | -------- | ------------------ | --------------------------------------------- |
+| `AUTH_PRIVATE_KEY`, `AUTH_JWKS` | yes      | `bun run auth:env` | Key pair that signs the access tokens         |
+| `SITE_URL`                      | yes      | `bun run auth:env` | The web app's origin; email links point at it |
+| `RESEND_API_KEY`                | no       | you                | Sends auth emails. Without it they're logged  |
+| `AUTH_EMAIL_FROM`               | no       | you                | From address on your Resend domain            |
+
+## Auth
+
+[Convex Auth](https://github.com/get-convex/convex-auth) 2.0.0-beta.0 with email and
+password: sign-up verifies the email with a link, and a forgotten password is reset with
+one. The session lives in httpOnly cookies on the web app's origin, through
+[@samebase/convex-auth-tanstack-start](https://github.com/samebase/convex-hosting/tree/main/packages/convex-auth-tanstack-start),
+so the server renders each page as the user. Convex Auth doesn't ship a TanStack Start
+integration yet; that package is the interim one, and it requires exactly this beta.
+
+- `apps/web/src/server.ts`, the Worker, answers `/auth/signin`, `/auth/refresh` and
+  `/auth/signout` and passes the session to TanStack Start.
+- Pages under `apps/web/src/routes/_authed/` need a session. Without one, the visitor goes
+  to `/signin` and comes back after signing in.
+- The pages are `/signin`, `/signup`, `/verify-email`, `/forgot-password` and
+  `/reset-password`.
+- In Convex, `authQuery`, `authMutation` and `authAction` from `convex/lib/auth.ts` require
+  a session and give the handler `ctx.userId`.
+- Sign-up creates the user before the email is verified. A day later, a scheduled
+  `removeUnverifiedUser` deletes the user if they never verified it. For users created before
+  that check existed, run
+  `bunx convex run internal/users:removeUnverifiedUsers` in `packages/backend`. Add
+  `'{"includeRecent": true}'` to skip the 24-hour wait, which also removes anyone who just
+  signed up and hasn't opened their link yet.
+
+To send real emails, create a [Resend](https://resend.com) API key, verify a domain, and set
+`RESEND_API_KEY` and `AUTH_EMAIL_FROM` (such as `My App <auth@example.com>`) on the
+deployment. Resend's default sender, `onboarding@resend.dev`, only delivers to your own
+Resend account's address.
 
 ## Deploy
 
@@ -129,6 +173,19 @@ deployed yet. When you're ready:
    This replaces the local deployment in `packages/backend/.env.local`. Run
    `bun run setup` again to point the web app at it.
 2. In the Convex dashboard, generate a production deploy key and a preview deploy key.
+   Set the auth variables on production, and as the defaults that each new preview
+   deployment copies, each with its own key pair:
+
+   ```sh
+   bun run auth:env --prod --site-url https://tanstack-convex-starter.<subdomain>.workers.dev
+   bun run auth:env --preview --site-url https://tanstack-convex-starter.<subdomain>.workers.dev
+   ```
+
+   Add `RESEND_API_KEY` and `AUTH_EMAIL_FROM` the same way (`bunx convex env set --prod`,
+   `bunx convex env default set --type preview`). Every preview shares one `SITE_URL`, so
+   the links in a preview's emails open production's origin; change a preview's own
+   `SITE_URL` in the Convex dashboard to test its emails.
+
 3. In the Cloudflare dashboard, go to Workers & Pages > Create > Import a repository, pick
    this repo and set:
 
@@ -172,7 +229,8 @@ Delete these files and lines, then run `bun run check`:
 - `packages/backend/convex/models/notes/`, `packages/backend/convex/api/notes.ts` and
   `packages/backend/convex/tests/notes/`
 - the `notes` table and its import in `packages/backend/convex/schema.ts`
-- `apps/web/src/routes/notes.tsx`
-- the Notes link in `apps/web/src/routes/index.tsx`
+- `apps/web/src/routes/_authed/notes.tsx`
+- the Notes links in `apps/web/src/routes/index.tsx` and `apps/web/src/routes/__root.tsx`
+- `AFTER_SIGN_IN` in `apps/web/src/lib/auth.ts`: point it at your first private page
 
 `bun run dev` regenerates `apps/web/src/routeTree.gen.ts` and `convex/_generated`.

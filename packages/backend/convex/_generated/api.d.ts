@@ -8,10 +8,17 @@
  * @module
  */
 
+import type * as api_auth from "../api/auth.js";
 import type * as api_notes from "../api/notes.js";
+import type * as api_users from "../api/users.js";
+import type * as internal_users from "../internal/users.js";
+import type * as lib_auth from "../lib/auth.js";
 import type * as lib_errors from "../lib/errors.js";
 import type * as models_notes_functions from "../models/notes/functions.js";
 import type * as models_notes_table from "../models/notes/table.js";
+import type * as models_users_auth from "../models/users/auth.js";
+import type * as models_users_functions from "../models/users/functions.js";
+import type * as models_users_table from "../models/users/table.js";
 
 import type {
   ApiFromModules,
@@ -20,10 +27,17 @@ import type {
 } from "convex/server";
 
 declare const fullApi: ApiFromModules<{
+  "api/auth": typeof api_auth;
   "api/notes": typeof api_notes;
+  "api/users": typeof api_users;
+  "internal/users": typeof internal_users;
+  "lib/auth": typeof lib_auth;
   "lib/errors": typeof lib_errors;
   "models/notes/functions": typeof models_notes_functions;
   "models/notes/table": typeof models_notes_table;
+  "models/users/auth": typeof models_users_auth;
+  "models/users/functions": typeof models_users_functions;
+  "models/users/table": typeof models_users_table;
 }>;
 
 /**
@@ -52,4 +66,9 @@ export declare const internal: FilterApi<
   FunctionReference<any, "internal">
 >;
 
-export declare const components: {};
+export declare const components: {
+  auth: import("@convex-dev/auth/_generated/component.js").ComponentApi<"auth">;
+  authEmail: import("@convex-dev/auth/components/email/_generated/component.js").ComponentApi<"authEmail">;
+  authPassword: import("@convex-dev/auth/components/password/_generated/component.js").ComponentApi<"authPassword">;
+  resend: import("@convex-dev/resend/_generated/component.js").ComponentApi<"resend">;
+};

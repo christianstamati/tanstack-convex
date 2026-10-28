@@ -15,8 +15,10 @@
   "type": "module",
   "scripts": {
     "setup": "bun scripts/setup.ts",
+    "auth:env": "bun scripts/auth-env.ts",
     "dev": "bun scripts/sync-env.ts && vp run --parallel --log labeled --filter './apps/*' --filter './packages/*' dev",
     "convex:dashboard": "vp run --filter @workspace/backend dashboard",
+    "convex:reset": "bun scripts/reset-convex.ts",
     "build": "vp run --filter './apps/*' build",
     "check": "vp check",
     "test": "vp run --filter './apps/*' --filter './packages/*' test",

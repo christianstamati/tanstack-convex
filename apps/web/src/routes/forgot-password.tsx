@@ -1,0 +1,67 @@
+import { useStartPasswordRecovery } from "@convex-dev/auth/methods/email-password/react";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { Button } from "@workspace/ui/components/button";
+import { useState } from "react";
+import { AuthCard, Field, FormError } from "#/components/auth-card";
+import { api } from "#/lib/api";
+import { authErrorMessage } from "#/lib/auth";
+
+export const Route = createFileRoute("/forgot-password")({ component: ForgotPassword });
+
+function ForgotPassword() {
+  const { startPasswordRecovery, pending } = useStartPasswordRecovery(api.auth);
+  const [email, setEmail] = useState("");
+  const [error, setError] = useState<string | null>(null);
+  const [sentTo, setSentTo] = useState<string | null>(null);
+
+  if (sentTo !== null) {
+    return (
+      <AuthCard
+        title="Check your email"
+        description={`We sent a link to ${sentTo}. Open it in this browser within 10 minutes to choose a new password.`}
+      >
+        {import.meta.env.DEV && (
+          <p className="text-sm text-muted-foreground">
+            Without RESEND_API_KEY on the deployment, the email is in the output of `bun run dev`.
+          </p>
+        )}
+      </AuthCard>
+    );
+  }
+
+  return (
+    <AuthCard
+      title="Reset your password"
+      description="We'll email you a link to choose a new one."
+      footer={
+        <Link to="/signin" className="underline">
+          Back to sign in
+        </Link>
+      }
+    >
+      <form
+        className="flex flex-col gap-4"
+        onSubmit={async (event) => {
+          event.preventDefault();
+          const result = await startPasswordRecovery({ email });
+          if (result.success) setSentTo(result.sentTo);
+          else setError(authErrorMessage(result.userError));
+        }}
+      >
+        <Field
+          label="Email"
+          type="email"
+          autoComplete="username"
+          required
+          value={email}
+          onChange={(event) => setEmail(event.target.value)}
+          disabled={pending}
+        />
+        <FormError>{error}</FormError>
+        <Button type="submit" disabled={pending}>
+          Send link
+        </Button>
+      </form>
+    </AuthCard>
+  );
+}

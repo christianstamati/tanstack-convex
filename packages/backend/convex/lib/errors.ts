@@ -5,7 +5,8 @@ import { defineErrors } from "@cs-stack/convex-errors";
  * `errors.create(code, params)`. The web app imports this file too, so keep server code out.
  */
 export const errors = defineErrors({
+  not_signed_in: () => "Sign in to continue.",
   not_found: (p: { what: "note" }) => `That ${p.what} doesn't exist anymore.`,
-  invalid_length: (p: { what: "note"; min: number; max: number }) =>
+  invalid_length: (p: { what: "note" | "name"; min: number; max: number }) =>
     `A ${p.what} must be ${p.min} to ${p.max} characters.`,
 });

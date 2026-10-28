@@ -1,4 +1,4 @@
-// Example feature: delete this file (and the link on the home page) to remove it.
+// Example feature: delete this file (and the links on the home page and in the header) to remove it.
 import { convexQuery, useConvexMutation } from "@convex-dev/react-query";
 import { Button } from "@workspace/ui/components/button";
 import {
@@ -17,8 +17,8 @@ import { attempt } from "#/lib/errors";
 
 const notesQuery = convexQuery(api.notes.list);
 
-export const Route = createFileRoute("/notes")({
-  // Fetched during SSR, then kept live by the Convex subscription.
+export const Route = createFileRoute("/_authed/notes")({
+  // Fetched during SSR as the user, then kept live by the Convex subscription.
   loader: ({ context }) => context.queryClient.query({ ...notesQuery, staleTime: "static" }),
   component: Notes,
 });
@@ -34,7 +34,9 @@ function Notes() {
       <Card>
         <CardHeader>
           <CardTitle>Notes</CardTitle>
-          <CardDescription>Stored in Convex and updated live.</CardDescription>
+          <CardDescription>
+            Only you can see them. Stored in Convex and updated live.
+          </CardDescription>
         </CardHeader>
         <CardContent className="flex flex-col gap-4">
           <form

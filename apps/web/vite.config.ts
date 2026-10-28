@@ -6,6 +6,7 @@ import { tanstackStart } from "@tanstack/react-start/plugin/vite";
 import viteReact from "@vitejs/plugin-react";
 import tailwindcss from "@tailwindcss/vite";
 import { cloudflare } from "@cloudflare/vite-plugin";
+import { convexAuth } from "@samebase/convex-auth-tanstack-start/vite";
 import { lazyPlugins } from "vite-plus";
 
 const config = defineConfig({
@@ -18,6 +19,8 @@ const config = defineConfig({
       ? [viteReact()]
       : [
           devtools(),
+          // Resolves Convex Auth's session provider, which the beta's exports map hides.
+          convexAuth(),
           cloudflare({ viteEnvironment: { name: "ssr" } }),
           tailwindcss(),
           tanstackStart(),
