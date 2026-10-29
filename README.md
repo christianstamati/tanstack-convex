@@ -97,10 +97,10 @@ Sign-up sends a link to verify the email. Until you set `RESEND_API_KEY` (see
 
 The Convex CLI may ask you one of two questions. To keep developing locally:
 
-| Question                                                                                                                 | When                                                                     | Answer                                               |
-| ------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------ | ---------------------------------------------------- |
-| Welcome to Convex! Would you like to login to your account?                                                              | The first `setup`                                                        | **Start without an account (run Convex locally)**    |
-| CONVEX_DEPLOYMENT is configured with deployment …, which is not linked with your account. Would you like to link it now? | Every `setup` and `dev`, if you have logged in to Convex on this machine | **n**. **Y** moves the app to a Convex Cloud project |
+| Question                                                                                                                 | When                                                                     | Answer                                                  |
+| ------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------ | ------------------------------------------------------- |
+| Welcome to Convex! Would you like to login to your account?                                                              | The first `setup`                                                        | **Start without an account (run Convex locally)**       |
+| CONVEX_DEPLOYMENT is configured with deployment …, which is not linked with your account. Would you like to link it now? | Every `setup` and `dev`, if you have logged in to Convex on this machine | **n**. To move to the cloud, use `bun run convex:cloud` |
 
 On Windows, use PowerShell or Windows Terminal. Git Bash works too. The Git hooks run under
 the `sh` that ships with Git for Windows. A few commands in this README are written for `sh`:
@@ -123,6 +123,27 @@ each a name and two notes. Both sign in with the password `Test!12345`. It skips
 email that already has an account, so after `convex:reset` it seeds again. It runs only while
 `SITE_URL` is a localhost URL and `RESEND_API_KEY` is unset, so the known password never
 reaches a deployment others can open. The users are in `packages/backend/convex/models/seed/`.
+
+### Local or cloud Convex
+
+`setup` starts you on a Convex deployment on your machine. To develop against Convex Cloud
+instead, or to switch back:
+
+```sh
+bun run convex:cloud   # your dev deployment on Convex Cloud. Logs in and links a project if needed
+bun run convex:local   # the deployment on your machine
+bun run convex:which   # which one the app uses now
+```
+
+A switch selects the deployment in `packages/backend/.env.local`, sets the auth variables on
+it if they're missing, pushes the functions and points `apps/web/.env.local` at it. Restart
+`bun run dev` afterwards. Each deployment keeps its own data, so seed the other one with
+`bun run convex:seed`. The cloud dev deployment is yours alone, and production and previews
+stay separate (see [Deploy](#deploy)).
+
+The first `convex:local` after linking a project replaces a local deployment made without an
+account, which the CLI can't select from a project. Its data stays in
+`packages/backend/.convex/local/anonymous-…`.
 
 ## Environment variables
 
@@ -212,9 +233,8 @@ paste:
 Deploy this app to my Convex Cloud and Cloudflare accounts. Read AGENTS.md and the Deploy
 section of README.md first. I'm logged in to both CLIs; don't log in or out. The Convex and
 Cloudflare MCP servers can't deploy, so use the `convex` and `cf` CLIs.
-1. If packages/backend/.env.local points at a local or anonymous deployment, run
-   `bunx convex dev --configure` in packages/backend to create a Convex Cloud project, then
-   `bun run setup` from the repo root.
+1. If `bun run convex:which` prints a local deployment, run `bun run convex:cloud` from the
+   repo root to create a Convex Cloud project and use its dev deployment.
 2. Find the production deployment's URL (`https://<name>.<region>.convex.cloud`) with the
    Convex MCP `status` tool on packages/backend, or in the dashboard. Build the web app
    against it: `VITE_CONVEX_URL=<url> bun run --cwd apps/web build`, then run
@@ -241,9 +261,8 @@ Tell me what you ran, the URLs, and anything that failed.
 
 ### By hand
 
-1. Link a Convex Cloud project: `cd packages/backend && bunx convex login && bunx convex dev --configure`.
-   This replaces the local deployment in `packages/backend/.env.local`. Run
-   `bun run setup` again to point the web app at it.
+1. Link a Convex Cloud project: `bun run convex:cloud`. It logs in, creates the project and
+   points the app at its dev deployment. `bun run convex:local` switches back.
 2. In the Convex dashboard, generate a production deploy key and a preview deploy key.
    Set the auth variables on production, and as the defaults that each new preview
    deployment copies, each with its own key pair:

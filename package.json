@@ -16,6 +16,9 @@
   "scripts": {
     "setup": "bun scripts/setup.ts",
     "convex:auth-env": "bun scripts/auth-env.ts",
+    "convex:local": "bun scripts/use-convex.ts local",
+    "convex:cloud": "bun scripts/use-convex.ts cloud",
+    "convex:which": "bun scripts/use-convex.ts which",
     "dev": "bun scripts/sync-env.ts && vp run --parallel --log labeled --filter './apps/*' --filter './packages/*' dev",
     "convex:dashboard": "vp run --filter @workspace/backend dashboard",
     "convex:reset": "bun scripts/reset-convex.ts",

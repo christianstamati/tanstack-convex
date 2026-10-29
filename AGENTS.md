@@ -45,7 +45,7 @@ packages/backend/  Convex functions and schema, all in convex/
   .agents/skills/          Convex agent skills, also in .claude/skills/, listed in skills-lock.json
 packages/ui/       shadcn/ui components on Base UI, plus the shared globals.css
 packages/tsconfig/ Shared compiler options: base.json, and react.json for DOM and JSX
-scripts/           setup.ts, auth-env.ts, sync-env.ts, cloudflare-build.ts
+scripts/           setup.ts, auth-env.ts, sync-env.ts, use-convex.ts, cloudflare-build.ts
 .agents/skills/    The shadcn and Cloudflare Workers agent skills, also in .claude/skills/, listed
                    in skills-lock.json. TanStack's come from node_modules through Intent
 .github/workflows/ ci.yml (ready, audit, zizmor) and codeql.yml. Deploys stay in Workers Builds.
@@ -72,6 +72,9 @@ shell passes that through unchanged, while `'{"to": …}'` breaks in cmd.exe and
 | `bun install`              | Install dependencies and the Vite+ git hooks                        |
 | `bun run setup`            | One-time local setup: local Convex deployment and env               |
 | `bun run convex:auth-env`  | Set the auth variables on a deployment (`--prod`, `--preview`)      |
+| `bun run convex:cloud`     | Use your Convex Cloud dev deployment, linking a project if needed   |
+| `bun run convex:local`     | Use the Convex deployment on this machine                           |
+| `bun run convex:which`     | Print which Convex deployment the app uses                          |
 | `bun run convex:reset`     | Delete every document on the dev deployment, components included    |
 | `bun run convex:seed`      | Sample users who can sign in, with notes. Safe to re-run            |
 | `bun run dev`              | Convex dev and the web dev server on http://localhost:3000          |
