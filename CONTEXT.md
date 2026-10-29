@@ -1,4 +1,4 @@
-# tanstack-convex-starter
+# tanstack-convex
 
 A public template for web apps on TanStack Start, Convex and Cloudflare Workers. Each product
 starts as a copy of it in its own repo and grows on its own from there. These terms are the ones

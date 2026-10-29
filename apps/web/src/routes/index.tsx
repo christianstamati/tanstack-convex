@@ -15,7 +15,7 @@ function Home() {
   return (
     <main className="mx-auto flex min-h-svh max-w-xl flex-col justify-center gap-4 p-6">
       {me && <p className="text-lg">Hi, {me.name || me.email || "there"}!</p>}
-      <h1 className="text-2xl font-semibold">tanstack-convex-starter</h1>
+      <h1 className="text-2xl font-semibold">tanstack-convex</h1>
       <p className="text-muted-foreground">TanStack Start, Convex and shadcn/ui on Base UI.</p>
       <div className="flex gap-2">
         <Link to="/notes" className={buttonVariants()}>

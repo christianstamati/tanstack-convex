@@ -1,8 +1,8 @@
 <!-- Made with the header builder at https://shieldcn.dev/header: one image per GitHub theme. -->
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="https://shieldcn.dev/header/dots.svg?title=tanstack-convex-starter&subtitle=TanStack+Start%2C+Convex+and+shadcn%2Fui+on+Cloudflare+Workers&logo=convex&mode=dark">
-  <source media="(prefers-color-scheme: light)" srcset="https://shieldcn.dev/header/dots.svg?title=tanstack-convex-starter&subtitle=TanStack+Start%2C+Convex+and+shadcn%2Fui+on+Cloudflare+Workers&logo=convex&mode=light">
-  <img alt="tanstack-convex-starter: TanStack Start, Convex and shadcn/ui on Cloudflare Workers" src="https://shieldcn.dev/header/dots.svg?title=tanstack-convex-starter&subtitle=TanStack+Start%2C+Convex+and+shadcn%2Fui+on+Cloudflare+Workers&logo=convex&mode=light">
+  <source media="(prefers-color-scheme: dark)" srcset="https://shieldcn.dev/header/dots.svg?title=tanstack-convex&subtitle=TanStack+Start%2C+Convex+and+shadcn%2Fui+on+Cloudflare+Workers&logo=convex&mode=dark">
+  <source media="(prefers-color-scheme: light)" srcset="https://shieldcn.dev/header/dots.svg?title=tanstack-convex&subtitle=TanStack+Start%2C+Convex+and+shadcn%2Fui+on+Cloudflare+Workers&logo=convex&mode=light">
+  <img alt="tanstack-convex: TanStack Start, Convex and shadcn/ui on Cloudflare Workers" src="https://shieldcn.dev/header/dots.svg?title=tanstack-convex&subtitle=TanStack+Start%2C+Convex+and+shadcn%2Fui+on+Cloudflare+Workers&logo=convex&mode=light">
 </picture>
 
 A boilerplate TypeScript monorepo with a TanStack Start web app, a Convex backend and
@@ -80,7 +80,7 @@ No Convex or Cloudflare account is needed to start.
 
 ```sh
 git clone <this repo>
-cd tanstack-convex-starter
+cd tanstack-convex
 bun install     # dependencies and the Git hooks
 bun run setup   # local Convex deployment and apps/web/.env.local
 bun run dev     # Convex + http://localhost:3000
@@ -332,8 +332,8 @@ Tell me what you ran, the URLs, and anything that failed.
    deployment copies, each with its own key pair:
 
    ```sh
-   bun run convex:auth env --prod --site-url https://tanstack-convex-starter.<subdomain>.workers.dev
-   bun run convex:auth env --preview --site-url https://tanstack-convex-starter.<subdomain>.workers.dev
+   bun run convex:auth env --prod --site-url https://tanstack-convex.<subdomain>.workers.dev
+   bun run convex:auth env --preview --site-url https://tanstack-convex.<subdomain>.workers.dev
    ```
 
    Add `RESEND_API_KEY` and `AUTH_EMAIL_FROM` the same way (`bunx convex env set --prod`,
@@ -344,15 +344,15 @@ Tell me what you ran, the URLs, and anything that failed.
 3. In the Cloudflare dashboard, go to Workers & Pages > Create > Import a repository, pick
    this repo and set:
 
-   | Setting         | Value                                                                    |
-   | --------------- | ------------------------------------------------------------------------ |
-   | Project name    | `tanstack-convex-starter`, the `name` in `apps/web/cloudflare.config.ts` |
-   | Root directory  | `apps/web`                                                               |
-   | Build command   | `bun run build:cloudflare`                                               |
-   | Deploy command  | `bunx cf deploy --prebuilt`                                              |
-   | Preview command | `bunx cf previews deploy --prebuilt`                                     |
-   | Build variables | `BUN_VERSION` = `1.4.4`, `SKIP_DEPENDENCY_INSTALL` = `1`                 |
-   | Build secrets   | `CONVEX_DEPLOY_KEY`, `CONVEX_PREVIEW_DEPLOY_KEY`                         |
+   | Setting         | Value                                                            |
+   | --------------- | ---------------------------------------------------------------- |
+   | Project name    | `tanstack-convex`, the `name` in `apps/web/cloudflare.config.ts` |
+   | Root directory  | `apps/web`                                                       |
+   | Build command   | `bun run build:cloudflare`                                       |
+   | Deploy command  | `bunx cf deploy --prebuilt`                                      |
+   | Preview command | `bunx cf previews deploy --prebuilt`                             |
+   | Build variables | `BUN_VERSION` = `1.4.4`, `SKIP_DEPENDENCY_INSTALL` = `1`         |
+   | Build secrets   | `CONVEX_DEPLOY_KEY`, `CONVEX_PREVIEW_DEPLOY_KEY`                 |
 
    Settings > Build has a Production tab and a Previews Base tab, and connecting the repo
    fills both with Cloudflare's defaults. Set both, with the preview command on Previews

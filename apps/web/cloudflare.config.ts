@@ -5,12 +5,12 @@ import { defineConfig } from "cf/config";
 // `cf previews deploy --prebuilt` upload.
 export default defineConfig({
   worker: {
-    name: "tanstack-convex-starter",
+    name: "tanstack-convex",
     compatibilityDate: "2026-10-19",
     compatibilityFlags: ["nodejs_compat"],
     // Answers /health and the /auth routes, and passes the session to TanStack Start's server entry.
     entrypoint: "src/server.ts",
-    // Production is served at tanstack-convex-starter.<subdomain>.workers.dev; branches get Preview URLs.
+    // Production is served at tanstack-convex.<subdomain>.workers.dev; branches get Preview URLs.
     workersDev: true,
     previewUrls: true,
     observability: { enabled: true },
