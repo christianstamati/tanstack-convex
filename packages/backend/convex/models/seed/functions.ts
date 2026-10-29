@@ -9,8 +9,8 @@ export const SEED_PASSWORD = "Test!12345";
 /** The users the seed creates, each with a verified email, so they can sign in right away. */
 export const SEED_USERS = [
   {
-    email: "admin@mail.com",
-    name: "Admin",
+    email: "ada@example.com",
+    name: "Ada",
     // Example feature: drop `notes` here and below when removing the notes list.
     notes: ["Try the Notes page", "Delete this note"],
   },

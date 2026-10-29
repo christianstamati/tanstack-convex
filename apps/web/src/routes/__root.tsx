@@ -145,14 +145,14 @@ function Header() {
           </Link>
         </SignedOut>
         <SignedIn>
-          <Account />
+          <UserMenu />
         </SignedIn>
       </div>
     </header>
   );
 }
 
-function Account() {
+function UserMenu() {
   // In the cache from the root loader when the page was rendered as the user.
   const { data: me } = useQuery(meQuery);
   // A full page load to /, because the page signed out on is usually private.

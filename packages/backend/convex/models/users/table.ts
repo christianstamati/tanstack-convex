@@ -9,8 +9,6 @@ import { v } from "convex/values";
 export const usersTable = defineTable({
   /** The name to show, set on /settings. Unset until the user picks one. */
   name: v.optional(v.string()),
-  /** An avatar URL, such as one an OAuth provider gives. */
-  image: v.optional(v.string()),
   /**
    * When the email was verified, set by the first sign-in. Unset for an Unverified user, so
    * `verifiedUsers` lists Users through the index without asking the authEmail component.
