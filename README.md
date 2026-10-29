@@ -160,7 +160,7 @@ Run them from the repo root.
 
 ### Data
 
-- **`bun run convex:seed`** signs up admin@mail.com, verifies its email, and gives it a name
+- **`bun run convex:seed`** signs up ada@example.com, verifies its email, and gives it a name
   and two notes. Its password is `Test!12345`. The seed skips an email that already has an
   account, so you can re-run it, including after `convex:reset`. It refuses to run unless
   `SITE_URL` is a localhost URL and `RESEND_API_KEY` is unset, so the known password never
@@ -480,6 +480,12 @@ on the repo and merge the onboarding PR it opens. `renovate.json` holds the rule
   zizmor version in `ci.yml`.
 
 Each Renovate branch also gets a Cloudflare preview and a Convex preview deployment.
+
+## Start a product
+
+A product starts as a copy of this repo and grows on its own; it doesn't pull later changes.
+[CONTEXT.md](CONTEXT.md) defines the words the template uses, such as User, Account, Session and
+Preview. Keep those terms, rewrite its first paragraph for the product, and add the product's own.
 
 ## Remove the example feature
 

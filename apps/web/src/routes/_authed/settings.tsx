@@ -49,7 +49,7 @@ function Settings() {
             <Field
               label="Name"
               autoComplete="name"
-              placeholder="How others see you"
+              placeholder="Shown instead of your email"
               value={name}
               onChange={(event) => setName(event.target.value)}
             />

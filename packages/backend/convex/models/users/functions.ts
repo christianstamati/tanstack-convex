@@ -180,7 +180,6 @@ const me = query({
       id: v.id("users"),
       email: v.union(v.string(), v.null()),
       name: v.union(v.string(), v.null()),
-      image: v.union(v.string(), v.null()),
     }),
   ),
   handler: async (ctx) => {
@@ -191,7 +190,7 @@ const me = query({
     const email = await ctx.runQuery(components.authEmail.verifiedEmails.getPrimaryEmail, {
       userId,
     });
-    return { id: userId, email, name: user.name ?? null, image: user.image ?? null };
+    return { id: userId, email, name: user.name ?? null };
   },
 });
 

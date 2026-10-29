@@ -24,6 +24,11 @@ remove the ones that are fixed.
 - **No magic links or one-time codes.** Email and password is the only email-based method.
 - **Sessions aren't checked on each request.** `getAuthUserId` trusts the access token until it
   expires, about a minute, so a signed-out or deleted session keeps working until then.
+- **A password reset doesn't end the user's other sessions.** `completePasswordRecovery` sets
+  the new password and signs in the browser that reset it, but every other browser stays signed
+  in, including one that knew the old password. The beta has no function to end all of a user's
+  sessions; its code marks this as a TODO in `changePassword`. When it adds one, call it after a
+  reset, and after a password change once the app has one.
 - **No TanStack Start integration in Convex Auth.** It ships one for Next.js only.
   `@samebase/convex-auth-tanstack-start` fills the gap until Convex Auth has its own, and needs
   exactly 2.0.0-beta.0. Its `convexAuth()` Vite plugin resolves a file that the beta's exports
@@ -72,10 +77,9 @@ When the plugin 2.0 and `cf` are stable, move to the stable versions and check e
   `completeChangeEmail`, and the React hooks for them. To add them, export them from
   `convex/api/auth.ts` and add the ones that complete a change to the `signIn` list in
   `apps/web/src/server.ts`. Each needs a page, plus `/confirm-email-change` for the email link.
-- **Deleting your own account.** Blocked by the first item above.
+- **A user deleting themselves.** Blocked by the first item above.
 - **Sign-in with OAuth or passkeys.** The beta and the adapter support GitHub, Google, Apple and
   passkeys; none is set up.
-- **Avatar upload.** `users.image` exists but nothing sets it.
 
 ## Our setup
 

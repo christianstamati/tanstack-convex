@@ -53,6 +53,7 @@ scripts/           setup.ts, auth.ts, convex.ts, sync-env.ts, cloudflare.ts
 .github/rulesets/  main.json: main takes squash-merged pull requests that pass `ready` and
                    CodeQL, and direct pushes from repo admins only. Applied with `gh api`
 renovate.json      Renovate's rules for dependency update PRs (see "Dependency updates" in the README)
+CONTEXT.md         The glossary: User, Account, Session, Local, Preview… Use its words in code and docs
 ```
 
 Workspace packages use the `@workspace/` scope. The web app imports the Convex API
