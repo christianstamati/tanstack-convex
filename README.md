@@ -281,7 +281,9 @@ Tell me what you ran, the URLs, and anything that failed.
    ```
 
    The build runs no checks, so this ruleset is what keeps failing code out of production.
-   It needs the `ready` check to have run once, which the first push does.
+   It needs the `ready` check to have run once, which the first push does. In a private repo
+   without GitHub Advanced Security, CodeQL doesn't run, so first remove the `code_scanning`
+   rule from the file, or no pull request can merge.
 
 The build command runs `scripts/cloudflare-build.ts`. It installs the workspace from the
 repo root, then runs `convex deploy`, which pushes the Convex functions and builds the app
@@ -303,7 +305,9 @@ Cloudflare.
 
 Workers Builds deploys without waiting for GitHub Actions, so `main` is protected by the
 ruleset in `.github/rulesets/main.json`: changes go in through a pull request, which can
-only merge once `ready` passes, and nobody can push to `main` directly, admins included.
+only merge once `ready` passes and CodeQL has scanned it, and nobody can push to `main`
+directly, admins included. CodeQL blocks the merge on a security alert of high severity or
+above, or on any other alert at error level.
 Each PR gets a Cloudflare preview, built whether or not its checks pass, and merging
 deploys production. To change the ruleset, edit the file and update it with
 `gh api --method PUT repos/{owner}/{repo}/rulesets/<id> --input .github/rulesets/main.json`
