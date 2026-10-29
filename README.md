@@ -178,6 +178,16 @@ Cloudflare Workers Builds builds and deploys the app from the GitHub repo. Every
 `main` deploys production. Every other branch gets a preview: a Cloudflare Preview URL,
 posted on its pull request, backed by its own Convex preview deployment.
 
+### Requirements
+
+| Need                                                        | Required | For                                                                       |
+| ----------------------------------------------------------- | -------- | ------------------------------------------------------------------------- |
+| A GitHub repo with this code                                | yes      | Workers Builds builds from it and posts Preview URLs on its pull requests |
+| [Convex Cloud](https://dashboard.convex.dev) account        | yes      | The production deployment and one preview deployment per branch           |
+| [Cloudflare](https://dash.cloudflare.com) account           | yes      | The Worker, its workers.dev URL, and Workers Builds                       |
+| The [Quick start](#quick-start) done                        | yes      | `bun install` and `bun run setup`, so the CLIs and scripts run            |
+| [Resend](https://resend.com) account with a verified domain | no       | Sends auth emails. Without it they're only logged, so no one can verify   |
+
 ### With a coding agent
 
 Log in to Convex and Cloudflare first, so the agent never signs in for you:
