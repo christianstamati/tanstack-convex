@@ -14,31 +14,29 @@ async function setup() {
   return { t, user, read };
 }
 
-describe("users.updateProfile", () => {
+describe("users.setName", () => {
   test("sets the name, trimmed", async () => {
     const { user, read } = await setup();
-    await user.mutation(api.users.updateProfile, { name: "  Ada Lovelace " });
+    await user.mutation(api.users.setName, { name: "  Ada Lovelace " });
     expect((await read())?.name).toBe("Ada Lovelace");
   });
 
   test("removes the name when it's empty", async () => {
     const { user, read } = await setup();
-    await user.mutation(api.users.updateProfile, { name: "Ada" });
-    await user.mutation(api.users.updateProfile, { name: "   " });
+    await user.mutation(api.users.setName, { name: "Ada" });
+    await user.mutation(api.users.setName, { name: "   " });
     expect((await read())?.name).toBeUndefined();
   });
 
   test("rejects a name that's too long", async () => {
     const { user } = await setup();
-    const error = await user
-      .mutation(api.users.updateProfile, { name: "x".repeat(61) })
-      .catch((e) => e);
+    const error = await user.mutation(api.users.setName, { name: "x".repeat(61) }).catch((e) => e);
     expect(errors.is(error, "invalid_length")).toBe(true);
   });
 
   test("requires a session", async () => {
     const { t } = await setup();
-    const error = await t.mutation(api.users.updateProfile, { name: "Ada" }).catch((e) => e);
+    const error = await t.mutation(api.users.setName, { name: "Ada" }).catch((e) => e);
     expect(errors.is(error, "not_signed_in")).toBe(true);
   });
 });

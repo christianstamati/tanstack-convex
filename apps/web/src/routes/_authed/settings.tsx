@@ -27,7 +27,7 @@ export const Route = createFileRoute("/_authed/settings")({
 function Settings() {
   const { data: me } = useSuspenseQuery(meQuery);
   const [name, setName] = useState(me?.name ?? "");
-  const update = useMutation({ mutationFn: useConvexMutation(api.users.updateProfile) });
+  const update = useMutation({ mutationFn: useConvexMutation(api.users.setName) });
 
   return (
     <main className="mx-auto flex max-w-xl flex-col gap-4 p-6 pt-16">

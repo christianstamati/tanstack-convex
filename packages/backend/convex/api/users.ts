@@ -1,3 +1,3 @@
 import { usersApi } from "../models/users/functions";
 
-export const { me, updateProfile } = usersApi;
+export const { me, setName } = usersApi;
