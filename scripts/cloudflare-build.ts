@@ -7,7 +7,8 @@
 //   - any other branch: CONVEX_PREVIEW_DEPLOY_KEY, a preview deploy key. Convex creates a
 //     preview deployment named after the branch, and reuses it on later pushes. The app is
 //     built as a preview (CLOUDFLARE_PREVIEW_BUILD), and Workers Builds then runs
-//     `cf previews deploy --prebuilt`.
+//     `cf previews deploy --prebuilt`. The preview deployment's SITE_URL is then pointed at
+//     the branch's Preview URL, so its auth emails link to the preview.
 import { spawnSync } from "node:child_process";
 import { join } from "node:path";
 
@@ -35,6 +36,47 @@ function run(command: string, args: string[], env?: NodeJS.ProcessEnv) {
   if (result.status !== 0) process.exit(result.status ?? 1);
 }
 
+/** Runs the Convex CLI against the branch's preview deployment and returns its output. */
+function previewEnv(args: string[]) {
+  const result = spawnSync("bun", ["x", "convex", "env", ...args, "--preview-name", branch!], {
+    cwd: join(rootDir, "packages/backend"),
+    encoding: "utf8",
+    env: { ...process.env, CONVEX_DEPLOY_KEY: deployKey },
+  });
+  if (result.status !== 0) {
+    console.error(result.stderr);
+    process.exit(result.status ?? 1);
+  }
+  return result.stdout.trim();
+}
+
+/**
+ * Every preview deployment copies production's SITE_URL from the preview defaults, so its emails
+ * would link to production. Points it at the branch's Preview URL instead:
+ * <preview name>-<worker>.<subdomain>.workers.dev, where the preview name is the branch,
+ * lowercased, with other characters than letters, digits and "-" replaced by "-". Cloudflare
+ * shortens a name that makes that first label longer than 63 characters and adds a hash, which
+ * can't be worked out here, so those previews keep production's SITE_URL.
+ */
+function setPreviewSiteUrl() {
+  const siteUrl = new URL(previewEnv(["get", "SITE_URL"]));
+  const previewName = branch!.toLowerCase().replace(/[^a-z0-9-]/g, "-");
+  const [label, ...rest] = siteUrl.hostname.split(".");
+  if (!siteUrl.hostname.endsWith(".workers.dev")) {
+    console.log(`SITE_URL ${siteUrl.origin} isn't on workers.dev; leaving it.`);
+    return;
+  }
+  if (label!.startsWith(`${previewName}-`)) return;
+  const previewLabel = `${previewName}-${label}`;
+  if (previewLabel.length > 63) {
+    console.log(`The Preview URL for ${branch} is shortened by Cloudflare; leaving SITE_URL.`);
+    return;
+  }
+  const previewUrl = `${siteUrl.protocol}//${[previewLabel, ...rest].join(".")}`;
+  previewEnv(["set", "SITE_URL", previewUrl]);
+  console.log(`Set the preview deployment's SITE_URL to ${previewUrl}.`);
+}
+
 console.log(`Branch ${branch}: ${isProduction ? "production" : "preview"} build.`);
 run("bun", ["install", "--frozen-lockfile"]);
 run("bun", ["run", "check"]);
@@ -54,3 +96,4 @@ run(
     ...(isProduction ? {} : { CLOUDFLARE_PREVIEW_BUILD: "true" }),
   },
 );
+if (!isProduction) setPreviewSiteUrl();
