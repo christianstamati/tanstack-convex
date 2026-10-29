@@ -1,3 +1,17 @@
+<!-- prettier-ignore-start -->
+<!-- intent-skills:start -->
+## Skill Loading
+
+Use the repository’s installed Intent. If it is unavailable, report the missing dependency instead of downloading a replacement.
+Before editing files for a substantial task:
+- Run `bunx --no-install --package @tanstack/intent intent list` from the workspace root to see available local skills.
+- If a listed skill matches the task, run `bunx --no-install --package @tanstack/intent intent load <package>#<skill>` before changing files.
+- Use the loaded `SKILL.md` guidance while making the change.
+- Monorepos: when working across packages, run the skill check from the workspace root and prefer the local skill for the package being changed.
+- Multiple matches: prefer the most specific local skill for the package or concern you are changing; load additional skills only when the task spans multiple packages or concerns.
+<!-- intent-skills:end -->
+<!-- prettier-ignore-end -->
+
 # AGENTS.md
 
 Notes for coding agents working in this repo. Read this before changing anything.
@@ -32,6 +46,8 @@ packages/backend/  Convex functions and schema, all in convex/
 packages/ui/       shadcn/ui components on Base UI, plus the shared globals.css
 packages/tsconfig/ Shared compiler options: base.json, and react.json for DOM and JSX
 scripts/           setup.ts, auth-env.ts, sync-env.ts, cloudflare-build.ts
+.agents/skills/    The shadcn and Cloudflare Workers agent skills, also in .claude/skills/, listed
+                   in skills-lock.json. TanStack's come from node_modules through Intent
 .github/workflows/ ci.yml (ready, audit, zizmor) and codeql.yml. Deploys stay in Workers Builds.
                    Pin actions to a commit SHA with the version in a comment; zizmor fails otherwise
 .github/rulesets/  main.json: main takes only squash-merged pull requests that pass `ready` and
@@ -161,6 +177,19 @@ PRs are squash-merged, and the PR's title and description become the commit mess
   `npm_config_force=true bunx convex ai-files update`. The variable gets past npm's refusal
   to run in a repo whose root package.json has `devEngines` naming Bun, since Convex
   installs the skills with `npm exec`.
+- The skills for the rest of the stack live at the repo root. TanStack ships its skills in
+  its packages, such as `@tanstack/react-router` and `@tanstack/react-start`, so they match
+  the installed versions. [Intent](https://github.com/TanStack/intent) (`@tanstack/intent`)
+  lists and loads them, as the "Skill Loading" section at the top says, and `intent.skills`
+  in the root package.json allows every `@tanstack/*` package. Intent writes that section;
+  it sits between `prettier-ignore` comments so `vp check --fix` leaves it as written. Change
+  the allowed packages with `bunx intent install --review` in a terminal. The shadcn and
+  Cloudflare `workers-best-practices` skills are copies in `.agents/skills/` (Codex) and
+  `.claude/skills/` (Claude Code), from `bunx skills add shadcn-ui/ui@shadcn` and
+  `bunx skills add cloudflare/skills@workers-best-practices`; refresh them with
+  `bunx skills update -p`. Use `bunx`, as npm refuses to run here. Don't edit any of these
+  skills by hand; `vp check` skips them. The Workers skill assumes a Wrangler file: this app
+  configures its Worker in `apps/web/cloudflare.config.ts` instead.
 
 ## Example feature
 
