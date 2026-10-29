@@ -1,6 +1,5 @@
 // Build command for Cloudflare Workers Builds, run from apps/web (the Worker's root
-// directory). Installs the workspace and runs `bun run check` and `bun run test`, so a
-// failing check stops the deploy. Then runs `convex deploy`, which pushes the Convex
+// directory). Installs the workspace, then runs `convex deploy`, which pushes the Convex
 // functions and builds apps/web with VITE_CONVEX_URL pointing at them:
 //   - production branch (PRODUCTION_BRANCH, default main): CONVEX_DEPLOY_KEY, a production
 //     deploy key. Workers Builds then runs `cf deploy --prebuilt`.
@@ -9,6 +8,9 @@
 //     built as a preview (CLOUDFLARE_PREVIEW_BUILD), and Workers Builds then runs
 //     `cf previews deploy --prebuilt`. The preview deployment's SITE_URL is then pointed at
 //     the branch's Preview URL, so its auth emails link to the preview.
+// It runs no checks: GitHub Actions' `ready` check does. main's ruleset
+// (.github/rulesets/main.json) only takes pull requests that pass it, so nothing unchecked
+// reaches production.
 import { spawnSync } from "node:child_process";
 import { join } from "node:path";
 
@@ -79,8 +81,6 @@ function setPreviewSiteUrl() {
 
 console.log(`Branch ${branch}: ${isProduction ? "production" : "preview"} build.`);
 run("bun", ["install", "--frozen-lockfile"]);
-run("bun", ["run", "check"]);
-run("bun", ["run", "test"]);
 run(
   "bun",
   [

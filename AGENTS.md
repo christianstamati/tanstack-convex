@@ -34,6 +34,8 @@ scripts/           setup.ts, auth-env.ts, sync-env.ts, cloudflare-build.ts
 convex.json        Points the Convex CLI at packages/backend/convex/ when run from the root
 .github/workflows/ ci.yml (ready, audit, zizmor) and codeql.yml. Deploys stay in Workers Builds.
                    Pin actions to a commit SHA with the version in a comment; zizmor fails otherwise
+.github/rulesets/  main.json: main takes only squash-merged pull requests that pass `ready` and
+                   CodeQL. Applied with `gh api`
 renovate.json      Renovate's rules for dependency update PRs (see "Dependency updates" in the README)
 ```
 
@@ -64,6 +66,12 @@ shell passes that through unchanged, while `'{"to": …}'` breaks in cmd.exe and
 | `bun run ready`            | Check, test and build: run before pushing                           |
 
 The pre-commit hook runs `vp check --fix` on staged files. Don't skip it with `--no-verify`.
+
+`main` takes changes only through pull requests that pass the `ready` check in `ci.yml` and
+CodeQL's scan, and nobody can push to it directly. Work on a branch and open a PR. The
+Cloudflare build runs no checks, so these are what stop failing or unsafe code from deploying.
+PRs are squash-merged, and the PR's title and description become the commit message on
+`main`: write them as you would that commit's.
 
 ## Rules
 

@@ -229,8 +229,9 @@ When I say it's connected, check with the `cf builds` commands that both the pro
 the previews build settings match the README's table (connecting fills in Cloudflare's
 defaults) and that each has its deploy key, by name only. Fix the settings, not the secrets.
 Then push a new branch, open a pull request, and check that its build posts a Preview URL,
-creates a Convex preview deployment, and that the preview's /health answers ok. Tell me what
-you ran, the URLs, and anything that failed.
+creates a Convex preview deployment, and that the preview's /health answers ok. Once its
+`ready` check has run, protect main with the ruleset command in the README's By hand step 4.
+Tell me what you ran, the URLs, and anything that failed.
 ```
 
 ### By hand
@@ -272,6 +273,22 @@ you ran, the URLs, and anything that failed.
    push, so set it up before pushing branches. The commands use `bunx`, not the default
    `npx`, because npm refuses to run in a repo whose `devEngines` names Bun.
 
+4. Protect `main`, from the repo root, with the [GitHub CLI](https://cli.github.com) signed
+   in as a repo admin:
+
+   ```sh
+   gh api --method POST repos/{owner}/{repo}/rulesets --input .github/rulesets/main.json
+   gh api --method PATCH repos/{owner}/{repo} -F allow_merge_commit=false -F allow_rebase_merge=false -f squash_merge_commit_title=PR_TITLE -f squash_merge_commit_message=PR_BODY
+   ```
+
+   The second command leaves squash as the only merge button, with the pull request's title
+   and description as the commit message.
+
+   The build runs no checks, so this ruleset is what keeps failing code out of production.
+   It needs the `ready` check to have run once, which the first push does. In a private repo
+   without GitHub Advanced Security, CodeQL doesn't run, so first remove the `code_scanning`
+   rule from the file, or no pull request can merge.
+
 The build command runs `scripts/cloudflare-build.ts`. It installs the workspace from the
 repo root, then runs `convex deploy`, which pushes the Convex functions and builds the app
 with `VITE_CONVEX_URL` pointing at them. On `main` it uses `CONVEX_DEPLOY_KEY` and the
@@ -284,18 +301,23 @@ that output instead of building again. Each build is reported as a check on the 
 Worker's settings live in `apps/web/cloudflare.config.ts`, read by the Cloudflare Vite plugin
 2.0 beta and the `cf` CLI beta; see [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
 
-The build script runs `bun run check` and `bun run test` before `convex deploy`, so a
-failing check stops both preview and production deploys. `main` is protected: changes go in
-through a pull request, and the PR can only merge once its Cloudflare build (the
-`Workers Builds: tanstack-convex-starter` check) passes. Each PR gets a Cloudflare preview,
-and merging deploys production. Admins can still push to `main` directly; the build still
-runs the checks, but nothing blocks the push itself. `bun run dev` and `vp preview` run the
-app in workerd, the Workers runtime, so what you test locally is what deploys.
-
-GitHub Actions also runs `bun run ready` on every pull request and push to `main`
+The build script runs no checks. GitHub Actions runs `bun run ready` (format, lint, type
+check, tests and the build) on every pull request and push to `main`
 (`.github/workflows/ci.yml`, the `ready` check). It needs no secrets and deploys nothing, so
-it checks pull requests from forks and copies of the repo that aren't connected to
-Cloudflare, and it builds the app without creating a Convex preview.
+it also checks pull requests from forks and copies of the repo that aren't connected to
+Cloudflare.
+
+Workers Builds deploys without waiting for GitHub Actions, so `main` is protected by the
+ruleset in `.github/rulesets/main.json`: changes go in through a pull request, which can
+only merge once `ready` passes and CodeQL has scanned it, and nobody can push to `main`
+directly, admins included. CodeQL blocks the merge on a security alert of high severity or
+above, or on any other alert at error level. Pull requests are squash-merged, so each commit
+on `main` is one checked pull request, titled and described as the PR was.
+Each PR gets a Cloudflare preview, built whether or not its checks pass, and merging
+deploys production. To change the ruleset, edit the file and update it with
+`gh api --method PUT repos/{owner}/{repo}/rulesets/<id> --input .github/rulesets/main.json`
+(`gh api repos/{owner}/{repo}/rulesets` lists the ids). `bun run dev` and `vp preview` run
+the app in workerd, the Workers runtime, so what you test locally is what deploys.
 
 ### Health check
 
@@ -329,6 +351,7 @@ repo in its settings; they aren't workflows.
 
 To deploy production by hand instead: sign in with `bunx cf auth` in `apps/web`, then
 `CONVEX_DEPLOY_KEY=... bun run --cwd packages/backend deploy && bun run --cwd apps/web deploy`.
+That deploy skips the checks: run `bun run ready` first.
 
 ## Dependency updates
 
