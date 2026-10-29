@@ -27,6 +27,7 @@
     "prepare": "vp config"
   },
   "devDependencies": {
+    "@tanstack/intent": "^0.5.6",
     "vite": "catalog:",
     "vite-plus": "catalog:"
   },
@@ -43,5 +44,10 @@
   "engines": {
     "node": ">=22.18.0"
   },
-  "packageManager": "bun@1.4.4"
+  "packageManager": "bun@1.4.4",
+  "intent": {
+    "skills": [
+      "@tanstack/*"
+    ]
+  }
 }
