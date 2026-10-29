@@ -82,7 +82,7 @@ When the plugin 2.0 and `cf` are stable, move to the stable versions and check e
   It can't for a branch whose name Cloudflare shortens with a hash (when
   `<branch>-<worker>` is over 63 characters) or when `SITE_URL` isn't on workers.dev; those
   keep production's `SITE_URL`. Change it in the Convex dashboard to test their emails.
-- **Changing the workers.dev subdomain leaves old URLs in Convex.** Run `bun run auth:env`
+- **Changing the workers.dev subdomain leaves old URLs in Convex.** Run `bun run convex:auth-env`
   with `--prod` and with `--preview` and the new URL. A preview deployment that already
   exists keeps its old `SITE_URL`; set it with
   `bunx convex env set SITE_URL <url> --preview-name <branch>` in packages/backend.

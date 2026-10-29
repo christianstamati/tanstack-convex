@@ -98,17 +98,26 @@ The Convex CLI may ask you one of two questions. To keep developing locally:
 | CONVEX_DEPLOYMENT is configured with deployment …, which is not linked with your account. Would you like to link it now? | Every `setup` and `dev`, if you have logged in to Convex on this machine | **n**. **Y** moves the app to a Convex Cloud project |
 
 On Windows, use PowerShell or Windows Terminal. Git Bash works too. The Git hooks run under
-the `sh` that ships with Git for Windows.
+the `sh` that ships with Git for Windows. A few commands in this README are written for `sh`:
+in PowerShell, set a `NAME=value` prefix first with `$env:NAME = "value"`, and run the parts
+of an `a && b` one at a time. Git Bash runs them as written.
 
 Other commands:
 
 ```sh
 bun run convex:dashboard  # Convex dashboard on http://127.0.0.1:6790, while `dev` runs
 bun run convex:reset      # delete every document on the dev deployment, components included
+bun run convex:seed       # sample users who can sign in, with notes. Safe to re-run
 bun run check             # format, lint, types. `vp check --fix` fixes what it can
 bun run test              # unit tests
 bun run build             # production build of apps/web
 ```
+
+`convex:seed` signs up ada@example.com and grace@example.com, verifies their emails, and gives
+each a name and two notes. Both sign in with the password `seeded password 1234`. It skips an
+email that already has an account, so after `convex:reset` it seeds again. It runs only while
+`SITE_URL` is a localhost URL and `RESEND_API_KEY` is unset, so the known password never
+reaches a deployment others can open. The users are in `packages/backend/convex/models/seed/`.
 
 ## Environment variables
 
@@ -126,12 +135,12 @@ Env vars a Convex function reads live on the deployment, not in a file. They are
 `packages/backend/convex/convex.config.ts`, and a push fails while a required one is missing.
 Set them from `packages/backend` with `bunx convex env set NAME value`.
 
-| Variable                        | Required | Set by             | Purpose                                       |
-| ------------------------------- | -------- | ------------------ | --------------------------------------------- |
-| `AUTH_PRIVATE_KEY`, `AUTH_JWKS` | yes      | `bun run auth:env` | Key pair that signs the access tokens         |
-| `SITE_URL`                      | yes      | `bun run auth:env` | The web app's origin; email links point at it |
-| `RESEND_API_KEY`                | no       | you                | Sends auth emails. Without it they're logged  |
-| `AUTH_EMAIL_FROM`               | no       | you                | From address on your Resend domain            |
+| Variable                        | Required | Set by                    | Purpose                                       |
+| ------------------------------- | -------- | ------------------------- | --------------------------------------------- |
+| `AUTH_PRIVATE_KEY`, `AUTH_JWKS` | yes      | `bun run convex:auth-env` | Key pair that signs the access tokens         |
+| `SITE_URL`                      | yes      | `bun run convex:auth-env` | The web app's origin; email links point at it |
+| `RESEND_API_KEY`                | no       | you                       | Sends auth emails. Without it they're logged  |
+| `AUTH_EMAIL_FROM`               | no       | you                       | From address on your Resend domain            |
 
 ## Auth
 
@@ -155,7 +164,7 @@ integration yet; that package is the interim one, and it requires exactly this b
   `removeUnverifiedUser` deletes the user if they never verified it. For users created before
   that check existed, run
   `bunx convex run internal/users:removeUnverifiedUsers` in `packages/backend`. Add
-  `'{"includeRecent": true}'` to skip the 24-hour wait, which also removes anyone who just
+  `"{includeRecent: true}"` to skip the 24-hour wait, which also removes anyone who just
   signed up and hasn't opened their link yet.
 
 ### Rate limits
@@ -205,9 +214,9 @@ Cloudflare MCP servers can't deploy, so use the `convex` and `cf` CLIs.
    Convex MCP `status` tool on packages/backend, or in the dashboard. Build the web app
    against it: `VITE_CONVEX_URL=<url> bun run --cwd apps/web build`, then run
    `bunx cf deploy --prebuilt` in apps/web. It prints the workers.dev URL; SITE_URL needs it.
-3. From the repo root, run `bun run auth:env --prod --site-url <workers.dev URL>` and
-   `bun run auth:env --preview --site-url <workers.dev URL>`. Then run `bunx convex deploy -y`
-   in packages/backend.
+3. From the repo root, run `bun run convex:auth-env --prod --site-url <workers.dev URL>`
+   and `bun run convex:auth-env --preview --site-url <workers.dev URL>`. Then run
+   `bunx convex deploy -y` in packages/backend.
 4. Check that <workers.dev URL>/health answers {"status":"ok","convex":"up"} and /signin
    loads without console errors. Don't sign up on production; I'll do that.
 5. Create the production deploy key with `bunx convex deployment token create
@@ -234,8 +243,8 @@ you ran, the URLs, and anything that failed.
    deployment copies, each with its own key pair:
 
    ```sh
-   bun run auth:env --prod --site-url https://tanstack-convex-starter.<subdomain>.workers.dev
-   bun run auth:env --preview --site-url https://tanstack-convex-starter.<subdomain>.workers.dev
+   bun run convex:auth-env --prod --site-url https://tanstack-convex-starter.<subdomain>.workers.dev
+   bun run convex:auth-env --preview --site-url https://tanstack-convex-starter.<subdomain>.workers.dev
    ```
 
    Add `RESEND_API_KEY` and `AUTH_EMAIL_FROM` the same way (`bunx convex env set --prod`,
@@ -356,5 +365,7 @@ Delete these files and lines, then run `bun run check`:
 - `apps/web/src/routes/_authed/notes.tsx`
 - the Notes links in `apps/web/src/routes/index.tsx` and `apps/web/src/routes/__root.tsx`
 - `AFTER_SIGN_IN` in `apps/web/src/lib/auth.ts`: point it at your first private page
+- the `notes` of each seed user, and the insert below them, in
+  `packages/backend/convex/models/seed/functions.ts`
 
 `bun run dev` regenerates `apps/web/src/routeTree.gen.ts` and `convex/_generated`.

@@ -20,7 +20,7 @@ const vEmail = schema.doc("devMailbox");
 /**
  * The newest email to an address, or `null`. From packages/backend:
  *
- *   bunx convex run internal/devMailbox:latest '{"to": "ada@example.com"}'
+ *   bunx convex run internal/devMailbox:latest "{to: 'ada@example.com'}"
  */
 const latest = internalQuery({
   args: { to: v.string() },

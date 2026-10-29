@@ -16,6 +16,7 @@ apps/web/          TanStack Start app, deployed by Cloudflare Workers Builds (cl
 packages/backend/  Convex functions and schema, all in convex/
   convex/models/<table>/   table.ts (the table) and functions.ts (its functions)
   convex/models/users/auth.ts  Convex Auth setup: email and password, emails via Resend
+  convex/models/seed/       The seed users that `bun run convex:seed` signs up. Local only
   convex/api/<table>.ts    Re-exports the table's functions: the public API
   convex/internal/<table>.ts  Re-exports internal functions, as `internal.<table>.*`
   convex/lib/api.refs.ts   `api`, `internal` and `components` for backend code and tests
@@ -43,14 +44,18 @@ Inside apps/web, `#/` maps to `src/`.
 
 ## Commands
 
-Run everything from the repo root with Bun.
+Run everything from the repo root with Bun. Commands with a `NAME=value` prefix are written
+for `sh` (Git Bash on Windows); in PowerShell, set `$env:NAME = "value"` first. Pass
+`convex run` arguments as JSON5 in double quotes, such as `"{to: 'ada@example.com'}"`: every
+shell passes that through unchanged, while `'{"to": …}'` breaks in cmd.exe and in PowerShell.
 
 | Command                    | What it does                                                        |
 | -------------------------- | ------------------------------------------------------------------- |
 | `bun install`              | Install dependencies and the Vite+ git hooks                        |
 | `bun run setup`            | One-time local setup: local Convex deployment and env               |
-| `bun run auth:env`         | Set the auth variables on a deployment (`--prod`, `--preview`)      |
+| `bun run convex:auth-env`  | Set the auth variables on a deployment (`--prod`, `--preview`)      |
 | `bun run convex:reset`     | Delete every document on the dev deployment, components included    |
+| `bun run convex:seed`      | Sample users who can sign in, with notes. Safe to re-run            |
 | `bun run dev`              | Convex dev and the web dev server on http://localhost:3000          |
 | `bun run convex:dashboard` | Local Convex dashboard on http://127.0.0.1:6790 (needs `dev`)       |
 | `bun run check`            | Format, lint and type check (`vp check`). Fix with `vp check --fix` |
@@ -94,7 +99,7 @@ The pre-commit hook runs `vp check --fix` on staged files. Don't skip it with `-
   - Without `RESEND_API_KEY`, auth emails are logged by `bun run dev` instead of sent, and
     stored in the `devMailbox` table. To test sign-up or password reset, read the newest
     email's `link` and `code` from packages/backend with
-    `bunx convex run internal/devMailbox:latest '{"to": "ada@example.com"}'` and open the link
+    `bunx convex run internal/devMailbox:latest "{to: 'ada@example.com'}"` and open the link
     in the same browser.
 - Env vars a Convex function needs are declared in `defineApp({ env })` in
   `convex/convex.config.ts`, read as `env` from `./_generated/server`, and set with
@@ -153,8 +158,9 @@ The notes list is example code: `packages/backend/convex/models/notes/`,
 `convex/api/notes.ts`, `convex/tests/notes/`, the `notes` table in `convex/schema.ts`, the
 `createNote` limit in `convex/lib/rateLimits.ts`,
 `apps/web/src/routes/_authed/notes.tsx`, the Notes links on the home page and in the header
-of `__root.tsx`, and `AFTER_SIGN_IN` in `apps/web/src/lib/auth.ts`. The README explains how
-to remove it. Auth is not example code.
+of `__root.tsx`, `AFTER_SIGN_IN` in `apps/web/src/lib/auth.ts`, and the seed users' notes in
+`convex/models/seed/functions.ts`. The README explains how to remove it. Auth is not example
+code.
 
 <!-- convex-ai-start -->
 

@@ -11,7 +11,8 @@
     "dev": "convex dev",
     "setup": "convex dev --once",
     "dashboard": "convex dashboard",
-    "deploy": "convex deploy --cmd 'bun run --cwd ../../apps/web build' --cmd-url-env-var-name VITE_CONVEX_URL",
+    "seed": "convex run internal/seed:run",
+    "deploy": "convex deploy --cmd \"bun run --cwd ../../apps/web build\" --cmd-url-env-var-name VITE_CONVEX_URL",
     "test": "vp test run"
   },
   "dependencies": {

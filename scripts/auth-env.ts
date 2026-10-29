@@ -2,9 +2,9 @@
 // a fresh signing key pair (AUTH_PRIVATE_KEY, AUTH_JWKS) and the web app's origin (SITE_URL).
 // A push fails while one of them is missing.
 //
-//   bun run auth:env                              the dev deployment, SITE_URL http://localhost:3000
-//   bun run auth:env --prod --site-url <url>      the production deployment
-//   bun run auth:env --preview --site-url <url>   the defaults each new preview deployment copies
+//   bun run convex:auth-env                             the dev deployment (localhost:3000)
+//   bun run convex:auth-env --prod --site-url <url>     the production deployment
+//   bun run convex:auth-env --preview --site-url <url>  the defaults each new preview copies
 //
 // `--force` replaces the key pair, which signs everyone out.
 import { spawnSync } from "node:child_process";

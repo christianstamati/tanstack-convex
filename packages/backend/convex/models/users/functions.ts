@@ -62,7 +62,7 @@ const removeUnverifiedUser = internalMutation({
  * for users created before `createUser` scheduled the check. Run it from packages/backend:
  *
  *   bunx convex run internal/users:removeUnverifiedUsers
- *   bunx convex run internal/users:removeUnverifiedUsers '{"includeRecent": true}'
+ *   bunx convex run internal/users:removeUnverifiedUsers "{includeRecent: true}"
  *
  * `includeRecent` skips the age check, so it also deletes someone who signed up a minute ago and
  * hasn't opened the link yet. Users with a verified email always stay. Returns how many users
