@@ -119,7 +119,7 @@ bun run build             # production build of apps/web
 ```
 
 `convex:seed` signs up ada@example.com and grace@example.com, verifies their emails, and gives
-each a name and two notes. Both sign in with the password `seeded password 1234`. It skips an
+each a name and two notes. Both sign in with the password `Test!12345`. It skips an
 email that already has an account, so after `convex:reset` it seeds again. It runs only while
 `SITE_URL` is a localhost URL and `RESEND_API_KEY` is unset, so the known password never
 reaches a deployment others can open. The users are in `packages/backend/convex/models/seed/`.

@@ -4,7 +4,7 @@ import type { Id } from "../../_generated/dataModel";
 import { env, internalMutation } from "../../_generated/server";
 
 /** Every seeded user's password. The seed refuses to run anywhere but a local web app. */
-export const SEED_PASSWORD = "seeded password 1234";
+export const SEED_PASSWORD = "Test!12345";
 
 /** The users the seed creates, each with a verified email, so they can sign in right away. */
 export const SEED_USERS = [
