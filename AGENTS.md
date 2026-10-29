@@ -120,6 +120,9 @@ PRs are squash-merged, and the PR's title and description become the commit mess
     belongs to `ctx.userId` before reading or changing it.
   - A query that a gated page's loader runs uses `query` and returns an empty result without
     a session: in the browser the loader runs before the gate redirects.
+  - Count or list Users with `verifiedUsers(ctx)` from `convex/models/users/functions.ts`,
+    not a plain query of `users`: that table also holds Unverified users until they are
+    deleted. Their `verifiedAt` is unset; the first sign-in, which verifies the email, sets it.
   - Pages that need a session go in `apps/web/src/routes/_authed/`. After signing in or out,
     load the next page with `location.assign`, not a router navigation, so the server
     renders it with the new session.

@@ -252,6 +252,10 @@ integration yet. That package fills in until it does, and it requires exactly th
   `bunx convex run internal/users:removeUnverifiedUsers` in `packages/backend`. Add
   `"{includeRecent: true}"` to skip the 24-hour wait, which also removes anyone who just
   signed up and hasn't opened their link yet.
+- Opening the link sets `verifiedAt` on the user, so `verifiedUsers(ctx)` in
+  `convex/models/users/functions.ts` lists Users without Unverified users through an index.
+  On a deployment with users verified before `verifiedAt` existed, run
+  `bunx convex run internal/users:backfillVerifiedAt` in `packages/backend` once.
 
 To send real emails, create a [Resend](https://resend.com) API key, verify a domain, and set
 `RESEND_API_KEY` and `AUTH_EMAIL_FROM` (such as `My App <auth@example.com>`) on the

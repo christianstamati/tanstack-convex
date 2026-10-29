@@ -2,7 +2,7 @@ import { getAuthUserId } from "@convex-dev/auth/server";
 import { v } from "convex/values";
 import { components, internal } from "../../lib/api.refs";
 import type { Id } from "../../_generated/dataModel";
-import { internalMutation, query, type MutationCtx } from "../../_generated/server";
+import { internalMutation, query, type MutationCtx, type QueryCtx } from "../../_generated/server";
 import { authMutation } from "../../lib/auth";
 import { errors } from "../../lib/errors";
 
@@ -14,15 +14,28 @@ const MAX_NAME_LENGTH = 60;
  */
 export const UNVERIFIED_USER_TTL_MS = 24 * 60 * 60 * 1000;
 
-/** Convex Auth calls this when someone signs up, before their email is verified. */
+/** The provider Convex Auth passes to `createUser` and `onSignIn`. */
+const vProvider = v.object({
+  name: v.literal("emailPassword"),
+  accountId: v.string(),
+  profile: v.object({}),
+});
+
+/**
+ * The Users: every user with a verified email, oldest verification first. Use it wherever the
+ * app counts or lists Users, so Unverified users never show up. Unset fields sort before every
+ * number, so the range skips them.
+ */
+export function verifiedUsers(ctx: QueryCtx) {
+  return ctx.db.query("users").withIndex("by_verifiedAt", (q) => q.gte("verifiedAt", 0));
+}
+
+/**
+ * Convex Auth calls this when someone signs up, before their email is verified: it creates an
+ * Unverified user.
+ */
 const createUser = internalMutation({
-  args: {
-    provider: v.object({
-      name: v.literal("emailPassword"),
-      accountId: v.string(),
-      profile: v.object({}),
-    }),
-  },
+  args: { provider: vProvider },
   returns: v.id("users"),
   handler: async (ctx): Promise<Id<"users">> => {
     const userId = await ctx.db.insert("users", {});
@@ -34,11 +47,30 @@ const createUser = internalMutation({
 });
 
 /**
+ * Convex Auth calls this on every sign-in. The first one happens only in `completeSignUp`, in
+ * the transaction that verifies the email, and every later one needs a verified email, so the
+ * first sign-in is when the Unverified user becomes a User.
+ */
+const onSignIn = internalMutation({
+  args: { provider: vProvider, userId: v.id("users") },
+  returns: v.null(),
+  handler: async (ctx, { userId }) => {
+    const user = await ctx.db.get("users", userId);
+    if (user !== null && user.verifiedAt === undefined) {
+      await ctx.db.patch("users", userId, { verifiedAt: Date.now() });
+    }
+    return null;
+  },
+});
+
+/**
  * Deletes a user who never verified their email, with their pending email challenges. Returns
  * whether it did. A user with a verified email is left alone.
  */
 async function removeIfUnverified(ctx: MutationCtx, userId: Id<"users">): Promise<boolean> {
-  if ((await ctx.db.get("users", userId)) === null) return false;
+  const user = await ctx.db.get("users", userId);
+  if (user === null || user.verifiedAt !== undefined) return false;
+  // Users verified before `onSignIn` set `verifiedAt` have only the verified email to show for it.
   const emails = await ctx.runQuery(components.authEmail.verifiedEmails.getEmails, { userId });
   if (emails.length > 0) return false;
   await ctx.runMutation(components.authEmail.verifiedEmails.deleteUser, { userId });
@@ -102,6 +134,43 @@ const removeUnverifiedUsers = internalMutation({
   },
 });
 
+/**
+ * Sets `verifiedAt` on users who verified their email before `onSignIn` set it, 100 at a time.
+ * Run it once on a deployment that has such users, from packages/backend:
+ *
+ *   bunx convex run internal/users:backfillVerifiedAt
+ *
+ * The authEmail component doesn't record when an email was verified, so it uses the time of
+ * sign-up: the sign-up link works for an hour. Unverified users stay as they are. Returns how
+ * many users this batch updated, and whether more batches were scheduled.
+ */
+const backfillVerifiedAt = internalMutation({
+  args: { cursor: v.optional(v.union(v.string(), v.null())) },
+  returns: v.object({ updated: v.number(), more: v.boolean() }),
+  handler: async (ctx, args): Promise<{ updated: number; more: boolean }> => {
+    const page = await ctx.db
+      .query("users")
+      .withIndex("by_verifiedAt", (q) => q.eq("verifiedAt", undefined))
+      .paginate({ numItems: 100, cursor: args.cursor ?? null });
+    let updated = 0;
+    for (const user of page.page) {
+      const emails = await ctx.runQuery(components.authEmail.verifiedEmails.getEmails, {
+        userId: user._id,
+      });
+      if (emails.length === 0) continue;
+      await ctx.db.patch("users", user._id, { verifiedAt: user._creationTime });
+      updated++;
+    }
+    console.log(`Set verifiedAt on ${updated} users${page.isDone ? "." : ", checking more."}`);
+    if (!page.isDone) {
+      await ctx.scheduler.runAfter(0, internal.users.backfillVerifiedAt, {
+        cursor: page.continueCursor,
+      });
+    }
+    return { updated, more: !page.isDone };
+  },
+});
+
 /** The signed-in user, or `null` without a session. */
 const me = query({
   args: {},
@@ -141,4 +210,10 @@ const updateProfile = authMutation({
 });
 
 export const usersApi = { me, updateProfile };
-export const usersInternal = { createUser, removeUnverifiedUser, removeUnverifiedUsers };
+export const usersInternal = {
+  createUser,
+  onSignIn,
+  removeUnverifiedUser,
+  removeUnverifiedUsers,
+  backfillVerifiedAt,
+};

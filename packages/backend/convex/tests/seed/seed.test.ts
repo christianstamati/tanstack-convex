@@ -64,6 +64,7 @@ describe("seed", () => {
     expect(new Set(users.map((user) => user.name))).toEqual(
       new Set(SEED_USERS.map((user) => user.name)),
     );
+    expect(users.every((user) => user.verifiedAt !== undefined)).toBe(true);
     const notes = await t.run((ctx) => ctx.db.query("notes").take(10));
     expect(notes).toHaveLength(SEED_USERS.flatMap((user) => user.notes).length);
     // The verification emails it opened are gone.

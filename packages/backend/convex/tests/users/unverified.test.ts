@@ -4,7 +4,7 @@ import { registerPasswordProvider } from "@convex-dev/auth/components/password/t
 import { convexTest } from "convex-test";
 import { afterEach, beforeAll, describe, expect, test, vi } from "vite-plus/test";
 import { api, internal } from "../../lib/api.refs";
-import { UNVERIFIED_USER_TTL_MS } from "../../models/users/functions";
+import { UNVERIFIED_USER_TTL_MS, verifiedUsers } from "../../models/users/functions";
 import schema from "../../schema";
 import { modules } from "../../test.setup";
 
@@ -128,5 +128,50 @@ describe("unverified users", () => {
     );
     expect(await users()).toHaveLength(1);
     expect((await signIn("verified@example.com")).status).toBe("complete");
+  });
+});
+
+describe("verifiedAt", () => {
+  test("is set when the email is verified, and kept by later sign-ins", async () => {
+    const { users, signUp, signIn, advance } = setup();
+    await signUp("unverified@example.com", { verify: false });
+    expect((await users())[0]!.verifiedAt).toBeUndefined();
+
+    const before = Date.now();
+    await signUp("verified@example.com", { verify: true });
+    const verifiedAt = (await users())[1]!.verifiedAt;
+    expect(verifiedAt).toBeGreaterThanOrEqual(before);
+
+    await advance(60_000);
+    expect((await signIn("verified@example.com")).status).toBe("complete");
+    expect((await users())[1]!.verifiedAt).toBe(verifiedAt);
+  });
+
+  test("verifiedUsers lists only Users, not Unverified users", async () => {
+    const { t, signUp } = setup();
+    await signUp("first@example.com", { verify: true });
+    await signUp("unverified@example.com", { verify: false });
+    await signUp("second@example.com", { verify: true });
+
+    const listed = await t.run((ctx) => verifiedUsers(ctx).take(10));
+    expect(listed).toHaveLength(2);
+    expect(listed.every((user) => user.verifiedAt !== undefined)).toBe(true);
+  });
+
+  test("the backfill sets it on users verified before onSignIn did", async () => {
+    const { t, users, signUp } = setup();
+    await signUp("old@example.com", { verify: true });
+    await signUp("unverified@example.com", { verify: false });
+    // As if the User had verified before `onSignIn` set the field.
+    const [old] = await users();
+    await t.run((ctx) => ctx.db.patch("users", old!._id, { verifiedAt: undefined }));
+
+    expect(await t.mutation(internal.users.backfillVerifiedAt, {})).toEqual({
+      updated: 1,
+      more: false,
+    });
+    const [backfilled, unverified] = await users();
+    expect(backfilled!.verifiedAt).toBe(old!._creationTime);
+    expect(unverified!.verifiedAt).toBeUndefined();
   });
 });
