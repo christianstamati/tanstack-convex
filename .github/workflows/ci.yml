@@ -21,6 +21,8 @@ concurrency:
   cancel-in-progress: ${{ github.event_name == 'pull_request' }}
 
 jobs:
+  # main's ruleset (.github/rulesets/main.json) requires this job's check by its name, and the
+  # Workers build runs no checks of its own. Renaming it lets failing code reach production.
   ready:
     if: github.event_name != 'schedule'
     runs-on: ubuntu-latest
