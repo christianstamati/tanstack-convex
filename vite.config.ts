@@ -9,9 +9,9 @@ const IGNORED = [
   "**/.wrangler/**",
   "**/.cloudflare/**",
   "**/dist/**",
-  ".agents/**",
-  ".claude/skills/**",
-  "skills-lock.json",
+  "**/.agents/**",
+  "**/.claude/skills/**",
+  "**/skills-lock.json",
 ];
 
 export default defineConfig({
