@@ -1,5 +1,5 @@
 /** The app's name: the tab title of the home page, and the end of every other page's. */
-export const APP_NAME = "tanstack-convex-starter";
+export const APP_NAME = "tanstack-convex";
 
 /** What the app is, for search results and link previews. */
 export const APP_DESCRIPTION =
