@@ -42,7 +42,8 @@ const logEmailRef = makeFunctionReference<"mutation">(
 ) as unknown as typeof sendEmail;
 
 // Email and password, with email verification at sign-up and password recovery by email link.
-// Sign-up creates the user right away, and the first session starts once the link is opened.
+// Sign-up creates an Unverified user right away. Opening the link verifies the email and starts
+// the first Session, and `onSignIn` then marks the User verified.
 const {
   signUpWithEmailPassword,
   completeSignUp,
@@ -66,7 +67,10 @@ const {
     // Unused until the app exports startChangeEmail and completeChangeEmail and adds this page.
     changeEmail: `${env.SITE_URL}/confirm-email-change`,
   },
-}).attachUserCallbacks({ createUser: internal.users.createUser });
+}).attachUserCallbacks({
+  createUser: internal.users.createUser,
+  onSignIn: internal.users.onSignIn,
+});
 
 export const authApi = {
   signOut,
