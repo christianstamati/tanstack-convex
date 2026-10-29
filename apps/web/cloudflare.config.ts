@@ -1,7 +1,8 @@
 import { defineConfig } from "cf/config";
 
-// The Worker's configuration, read by the Cloudflare Vite plugin. The build writes it to
-// dist/server/wrangler.json, which `wrangler deploy` and `wrangler preview` use.
+// The Worker's configuration, read by the Cloudflare Vite plugin and the `cf` CLI. The build
+// writes the Worker to .cloudflare/output/, which `cf deploy --prebuilt` and
+// `cf previews deploy --prebuilt` upload.
 export default defineConfig({
   worker: {
     name: "tanstack-convex-starter",

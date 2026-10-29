@@ -19,8 +19,8 @@ remove the ones that are fixed.
   (`UNVERIFIED_USER_TTL_MS`), after which they can sign up again.
 - **Emails go through Resend only, with fixed text.** The beta sends through `@convex-dev/resend`
   and doesn't let the app change the subject or the body. Without `RESEND_API_KEY`, `logEmail`
-  in `convex/models/users/auth.ts` stands in for Resend: it logs each email and stores it in the
-  `devMailbox` table.
+  in `convex/models/users/auth.ts` takes Resend's place. It logs each email and stores it in
+  the `devMailbox` table.
 - **No magic links or one-time codes.** Email and password is the only email-based method.
 - **Sessions aren't checked on each request.** `getAuthUserId` trusts the access token until it
   expires, about a minute, so a signed-out or deleted session keeps working until then.
@@ -39,12 +39,14 @@ remove the ones that are fixed.
 ## Limits of the Cloudflare betas
 
 The web app builds with `@cloudflare/vite-plugin` 2.0.0-beta.v.6 and deploys with the `cf` CLI
-1.0.0-beta.24, both pinned exactly. Version 1.65.0 of the plugin pinned a miniflare with
-undici 7.29.1, which has 4 high-severity advisories. The beta's miniflare uses 7.30.1.
+1.0.0-beta.24, both pinned exactly. We moved off plugin 1.65.0 because it pinned a miniflare
+with undici 7.29.1, which has 4 high-severity advisories. The beta's miniflare uses 7.30.1.
 
-- **Deploys through `cf` work.** Production was first deployed by hand with
-  `bunx cf deploy --prebuilt`, and a Workers Builds preview with `bunx cf previews deploy
-  --prebuilt` deployed a branch against its own Convex preview deployment.
+Deploying through `cf` works. We first deployed production by hand with
+`bunx cf deploy --prebuilt`, and a Workers Builds preview with
+`bunx cf previews deploy --prebuilt` deployed a branch against its own Convex preview
+deployment. The catches are below.
+
 - **Connecting the repo fills in Cloudflare's defaults.** The dashboard sets `bun run build`,
   `npx wrangler deploy` (`npx wrangler preview` for previews) and root `/` on both the
   Production and Previews Base tabs. Replace them with the README's settings on both tabs.
@@ -67,9 +69,9 @@ When the plugin 2.0 and `cf` are stable, move to the stable versions and check e
 ## Not built yet
 
 - **Change password and change email.** The beta has `changePassword`, `startChangeEmail` and
-  `completeChangeEmail`, and the React hooks for them. They need exporting from
-  `convex/api/auth.ts`, the completing ones adding to the `signIn` list in
-  `apps/web/src/server.ts`, and a page for each, plus `/confirm-email-change` for the email link.
+  `completeChangeEmail`, and the React hooks for them. To add them, export them from
+  `convex/api/auth.ts` and add the ones that complete a change to the `signIn` list in
+  `apps/web/src/server.ts`. Each needs a page, plus `/confirm-email-change` for the email link.
 - **Deleting your own account.** Blocked by the first item above.
 - **Sign-in with OAuth or passkeys.** The beta and the adapter support GitHub, Google, Apple and
   passkeys; none is set up.
@@ -87,8 +89,8 @@ When the plugin 2.0 and `cf` are stable, move to the stable versions and check e
   exists keeps its old `SITE_URL`; set it with
   `bunx convex env set SITE_URL <url> --preview-name <branch>` in packages/backend.
 - **The auth pages were checked by hand in one browser, not automated.** Sign-up, verification,
-  sign-in, sign-out, password reset and sign-out in a second tab all work on port 3000. Open:
-  - A second browser, where the link must not work, is not tested yet.
+  sign-in, password reset, and signing out in one tab or another all work on port 3000. Nobody
+  has yet checked that an emailed link fails when opened in a second browser.
 - **A used link and a link opened in another browser get the same message.** The beta's hooks
   remove the browser's secret once a link works, so both come back as `MISSING_SECRET`, and
   `authErrorMessage` names both causes.

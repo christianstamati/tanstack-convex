@@ -87,24 +87,23 @@ bun run dev     # Convex + http://localhost:3000
 ```
 
 `setup` creates an anonymous Convex deployment that runs on your machine and stores its data in
-`packages/backend/.convex/`, as `bun run convex:local` does: it needs no account and never asks
-you to log in. It also sets the variables auth needs on it. It is safe to re-run, and needed
-again after pulling the change that added auth. Once there's a deployment, local or cloud, it
-keeps it. Open http://localhost:3000, sign
+`packages/backend/.convex/`, as `bun run convex:local` does. It needs no account and never asks
+you to log in. It also sets the variables auth needs on the deployment. You can re-run it, and
+once there's a deployment, local or cloud, it keeps that one. Open http://localhost:3000, sign
 up and try the Notes page.
 
 Sign-up sends a link to verify the email. Until you set `RESEND_API_KEY` (see
-[Auth](#auth)), emails aren't sent: the email and its link appear in the output of
-`bun run dev`. Open the link in the browser you signed up in.
+[Auth](#auth)), nothing is sent. `bun run dev` prints the email and its link instead. Open the
+link in the browser you signed up in.
 
 If you've logged in to Convex on this machine, `bun run dev` may ask "CONVEX_DEPLOYMENT is
 configured with deployment …, which is not linked with your account. Would you like to link it
 now?" Answer **n** to keep developing locally. To use the cloud, run `bun run convex:cloud`.
 
 On Windows, use PowerShell or Windows Terminal. Git Bash works too. The Git hooks run under
-the `sh` that ships with Git for Windows. A few commands in this README are written for `sh`:
-in PowerShell, set a `NAME=value` prefix first with `$env:NAME = "value"`, and run the parts
-of an `a && b` one at a time. Git Bash runs them as written.
+the `sh` that ships with Git for Windows. A few commands in this README are written for `sh`.
+To run one in PowerShell, set a `NAME=value` prefix first with `$env:NAME = "value"`, and run
+the parts of an `a && b` one at a time. Git Bash runs them as written.
 
 Every command, with its options, is in [Commands](#commands).
 
@@ -125,7 +124,7 @@ it if they're missing, pushes the functions and points `apps/web/.env.local` at 
 `bun run convex:seed`. The cloud dev deployment is yours alone, and production and previews
 stay separate (see [Deploy](#deploy)).
 
-The local deployment is anonymous: it isn't linked to an account even when you're logged in,
+The local deployment is anonymous. It isn't linked to an account even when you're logged in,
 and `bun run convex:dashboard` opens its dashboard on http://127.0.0.1:6790. While it's in use,
 `CONVEX_CLOUD_PROJECT` in `packages/backend/.env.local` remembers the cloud project (as
 `team:project`), so `convex:cloud` goes back to it without asking.
@@ -162,22 +161,22 @@ Run them from the repo root.
 ### Data
 
 - **`bun run convex:seed`** signs up admin@mail.com, verifies its email, and gives it a name
-  and two notes. It signs in with the password `Test!12345`. It skips an email that already has
-  an account, so it's safe to re-run, and after `convex:reset` it seeds again. It runs only
-  while `SITE_URL` is a localhost URL and `RESEND_API_KEY` is unset, so the known password
-  never reaches a deployment others can open. The user is in
+  and two notes. Its password is `Test!12345`. The seed skips an email that already has an
+  account, so you can re-run it, including after `convex:reset`. It refuses to run unless
+  `SITE_URL` is a localhost URL and `RESEND_API_KEY` is unset, so the known password never
+  reaches a deployment others can open. The user is defined in
   `packages/backend/convex/models/seed/`.
-- **`bun run convex:reset`** deletes every document on the dev deployment, the components'
-  included: users, sessions, passwords and emails. The functions, the schema and the env vars
-  stay. It asks you to type "reset" first; `--skip-confirmation` (or `-y`) doesn't ask. On the
-  local deployment, `dev` must be running. It never touches production.
+- **`bun run convex:reset`** deletes every document on the dev deployment, including the
+  components' users, sessions, passwords and emails. The functions, the schema and the env vars
+  stay. It asks you to type "reset" first, unless you pass `--skip-confirmation` (or `-y`). On
+  the local deployment, `dev` must be running. It never touches production.
 
 ### Auth
 
-`bun run convex:auth <subcommand>` manages Convex Auth's variables on a deployment: the key
-pair that signs the access tokens (`AUTH_PRIVATE_KEY`, `AUTH_JWKS`) and the web app's origin
-(`SITE_URL`). It works on the dev deployment, or on production with `--prod`, or on the
-defaults each new preview deployment copies with `--preview`.
+`bun run convex:auth <subcommand>` manages Convex Auth's variables on a deployment. Those are
+the key pair that signs the access tokens (`AUTH_PRIVATE_KEY`, `AUTH_JWKS`) and the web app's
+origin (`SITE_URL`). It targets the dev deployment by default, production with `--prod`, and
+the defaults each new preview deployment copies with `--preview`.
 
 - **`env`** sets the variables that are missing and keeps the ones that are set.
   `--site-url <url>` sets `SITE_URL`, which on the dev deployment defaults to
@@ -185,7 +184,7 @@ defaults each new preview deployment copies with `--preview`.
 - **`check`** lists the variables, without the secrets' values, and checks that the two keys
   belong together. It exits with 1 when a required one is missing or wrong.
 - **`rotate`** replaces the key pair, which signs everyone out. It asks you to type "rotate"
-  first; `--skip-confirmation` doesn't ask.
+  first, unless you pass `--skip-confirmation`.
 
 ### Check and build
 
@@ -202,8 +201,8 @@ defaults each new preview deployment copies with `--preview`.
 
 - **`bun run build:cloudflare`**, in apps/web, is the build command of Workers Builds. It runs
   `scripts/cloudflare.ts build`, which deploys the Convex functions for the branch and builds
-  the app against them. It needs the variables Workers Builds sets, so run by hand it stops;
-  [Deploy](#deploy) covers deploying.
+  the app against them. It needs the variables Workers Builds sets, so it stops if you run it
+  by hand. To deploy, see [Deploy](#deploy).
 
 ## Environment variables
 
@@ -231,12 +230,12 @@ Set them from `packages/backend` with `bunx convex env set NAME value`.
 
 ## Auth
 
-[Convex Auth](https://github.com/get-convex/convex-auth) 2.0.0-beta.0 with email and
-password: sign-up verifies the email with a link, and a forgotten password is reset with
-one. The session lives in httpOnly cookies on the web app's origin, through
+Auth is [Convex Auth](https://github.com/get-convex/convex-auth) 2.0.0-beta.0 with email and
+password. Sign-up sends a link that verifies the email, and a forgotten password gets a reset
+link. The session lives in httpOnly cookies on the web app's origin, through
 [@samebase/convex-auth-tanstack-start](https://github.com/samebase/convex-hosting/tree/main/packages/convex-auth-tanstack-start),
 so the server renders each page as the user. Convex Auth doesn't ship a TanStack Start
-integration yet; that package is the interim one, and it requires exactly this beta.
+integration yet. That package fills in until it does, and it requires exactly this beta.
 [KNOWN_ISSUES.md](KNOWN_ISSUES.md) lists what the beta can't do yet and what isn't built.
 
 - `apps/web/src/server.ts`, the Worker, answers `/auth/signin`, `/auth/refresh` and
@@ -254,25 +253,25 @@ integration yet; that package is the interim one, and it requires exactly this b
   `"{includeRecent: true}"` to skip the 24-hour wait, which also removes anyone who just
   signed up and hasn't opened their link yet.
 
-### Rate limits
-
-Convex Auth limits sign-in attempts and auth emails by itself. Limits on the app's own functions
-live in `packages/backend/convex/lib/rateLimits.ts`, on the
-[rate limiter component](https://www.convex.dev/components/rate-limiter). A function calls
-`enforceRateLimit(ctx, name, ctx.userId)` before doing its work, and over the limit it throws
-`rate_limited`, which the web app shows as "Too many requests. Try again in N seconds." The
-example: `notes.create` lets a user add 10 notes at once, then 30 a minute.
-
 To send real emails, create a [Resend](https://resend.com) API key, verify a domain, and set
 `RESEND_API_KEY` and `AUTH_EMAIL_FROM` (such as `My App <auth@example.com>`) on the
 deployment. Resend's default sender, `onboarding@resend.dev`, only delivers to your own
 Resend account's address.
 
+### Rate limits
+
+Convex Auth limits sign-in attempts and auth emails by itself. Limits on the app's own functions
+live in `packages/backend/convex/lib/rateLimits.ts`, on the
+[rate limiter component](https://www.convex.dev/components/rate-limiter). A function calls
+`enforceRateLimit(ctx, name, ctx.userId)` before doing its work. Over the limit it throws
+`rate_limited`, which the web app shows as "Too many requests. Try again in N seconds."
+`notes.create` is the example. It lets a user add 10 notes at once, then 30 a minute.
+
 ## Deploy
 
 Cloudflare Workers Builds builds and deploys the app from the GitHub repo. Every push to
-`main` deploys production. Every other branch gets a preview: a Cloudflare Preview URL,
-posted on its pull request, backed by its own Convex preview deployment.
+`main` deploys production. Every other branch gets a Cloudflare Preview URL, posted on its
+pull request and backed by its own Convex preview deployment.
 
 ### Requirements
 
@@ -352,7 +351,7 @@ Tell me what you ran, the URLs, and anything that failed.
    | Build secrets   | `CONVEX_DEPLOY_KEY`, `CONVEX_PREVIEW_DEPLOY_KEY`                         |
 
    Settings > Build has a Production tab and a Previews Base tab, and connecting the repo
-   fills both with Cloudflare's defaults: set both, with the preview command on Previews
+   fills both with Cloudflare's defaults. Set both, with the preview command on Previews
    Base. Production needs `CONVEX_DEPLOY_KEY` and Previews Base `CONVEX_PREVIEW_DEPLOY_KEY`.
    Check that `main` is the production branch. Each branch copies Previews Base on its first
    push, so set it up before pushing branches. The commands use `bunx`, not the default
@@ -375,37 +374,55 @@ Tell me what you ran, the URLs, and anything that failed.
    without GitHub Advanced Security, CodeQL doesn't run, so first remove the `code_scanning`
    rule from the file, or no pull request can merge.
 
+To deploy production from your machine instead, sign in with `bunx cf auth` in `apps/web`, then
+run `CONVEX_DEPLOY_KEY=... bun run --cwd packages/backend deploy && bun run --cwd apps/web deploy`.
+That skips the checks, so run `bun run ready` first.
+
+### What a build does
+
 The build command runs `scripts/cloudflare.ts build`. It installs the workspace from the
-repo root, then runs `convex deploy`, which pushes the Convex functions and builds the app
-with `VITE_CONVEX_URL` pointing at them. On `main` it uses `CONVEX_DEPLOY_KEY` and the
-production deployment. On any other branch it uses `CONVEX_PREVIEW_DEPLOY_KEY`, which
-creates a Convex preview deployment named after the branch and reuses it on later pushes.
-Off `main`, it sets `CLOUDFLARE_PREVIEW_BUILD=true`, so the build is a preview build. The
-build writes the Worker to `apps/web/.cloudflare/output/`, and Cloudflare then runs the deploy
-command on `main` and the preview command elsewhere, both with `--prebuilt` so they deploy
-that output instead of building again. Each build is reported as a check on the commit. The
-Worker's settings live in `apps/web/cloudflare.config.ts`, read by the Cloudflare Vite plugin
-2.0 beta and the `cf` CLI beta; see [KNOWN_ISSUES.md](KNOWN_ISSUES.md).
+repo root, then runs `convex deploy`. That pushes the Convex functions and builds the app
+with `VITE_CONVEX_URL` pointing at them.
+
+- On `main`, it uses `CONVEX_DEPLOY_KEY` and the production deployment. Cloudflare then runs
+  the deploy command.
+- On any other branch, it uses `CONVEX_PREVIEW_DEPLOY_KEY`. Convex creates a preview
+  deployment named after the branch and reuses it on later pushes. The script sets
+  `CLOUDFLARE_PREVIEW_BUILD=true` so the app builds as a preview, and Cloudflare then runs
+  the preview command.
+
+The build writes the Worker to `apps/web/.cloudflare/output/`. Both commands pass
+`--prebuilt`, so they upload that output instead of building again. Cloudflare reports each
+build as a check on the commit. The Worker's settings live in `apps/web/cloudflare.config.ts`,
+which the Cloudflare Vite plugin 2.0 beta and the `cf` CLI beta read. See
+[KNOWN_ISSUES.md](KNOWN_ISSUES.md) for their limits.
+
+`bun run dev` and `vp preview` run the app in workerd, the Workers runtime, so what you test
+locally runs on the same runtime as production.
+
+### What protects main
 
 The build script runs no checks. GitHub Actions runs `bun run ready` (format, lint, type
-check, tests and the build) on every pull request and push to `main`
-(`.github/workflows/ci.yml`, the `ready` check). It needs no secrets and deploys nothing, so
-it also checks pull requests from forks and copies of the repo that aren't connected to
-Cloudflare.
+check, tests and the build) on every pull request and push to `main`, as the `ready` check
+in `.github/workflows/ci.yml`. It needs no secrets and deploys nothing, so it also checks
+pull requests from forks and from copies of the repo that aren't connected to Cloudflare.
 
-Workers Builds deploys without waiting for GitHub Actions, so `main` is protected by the
-ruleset in `.github/rulesets/main.json`: changes go in through a pull request, which can
-only merge once `ready` passes and CodeQL has scanned it. Only repo admins can push to `main`
-directly, skipping those checks: in a personal repo that's just the owner, as GitHub doesn't let
-collaborators there be admins. In an organization, remove the `bypass_actors` entry to require
-a pull request from everyone. CodeQL blocks the merge on a security alert of high severity or
-above, or on any other alert at error level. Pull requests are squash-merged, so each commit
-on `main` is one checked pull request, titled and described as the PR was.
-Each PR gets a Cloudflare preview, built whether or not its checks pass, and merging
-deploys production. To change the ruleset, edit the file and update it with
-`gh api --method PUT repos/{owner}/{repo}/rulesets/<id> --input .github/rulesets/main.json`
-(`gh api repos/{owner}/{repo}/rulesets` lists the ids). `bun run dev` and `vp preview` run
-the app in workerd, the Workers runtime, so what you test locally is what deploys.
+Workers Builds deploys without waiting for GitHub Actions. The ruleset in
+`.github/rulesets/main.json` makes up for that. Changes reach `main` through a pull request,
+which can only merge once `ready` passes and CodeQL has scanned it. CodeQL blocks the merge on
+a security alert of high severity or above, or on any other alert at error level.
+
+Repo admins can still push to `main` directly and skip those checks. In a personal repo that's
+only the owner, because GitHub doesn't let collaborators there be admins. In an organization,
+remove the `bypass_actors` entry to require a pull request from everyone.
+
+Pull requests are squash-merged, so each commit on `main` is one checked pull request, with
+the PR's title and description as its message. Each PR gets a Cloudflare preview, built
+whether or not its checks pass. Merging deploys production.
+
+To change the ruleset, edit the file and update it with
+`gh api --method PUT repos/{owner}/{repo}/rulesets/<id> --input .github/rulesets/main.json`.
+`gh api repos/{owner}/{repo}/rulesets` lists the ids.
 
 ### Health check
 
@@ -416,9 +433,9 @@ deployment's `/version`, so a check runs no Convex function.
 
 ### Search and link previews
 
-`apps/web/src/lib/meta.ts` holds the app's name and description, which every page's tags start
-from: the description and the Open Graph tags that link previews read. Each page sets its own
-title with `pageMeta`. Pages that need a session are `noindex`, and
+`apps/web/src/lib/meta.ts` holds the app's name and description. Every page starts from
+those tags, including the Open Graph tags that link previews read, and sets its own title
+with `pageMeta`. Pages that need a session are `noindex`, and
 `apps/web/public/robots.txt` allows the rest. To show an image in link previews, set
 `og:image` in `siteMeta()` to an absolute URL of a 1200×630 PNG.
 
@@ -437,10 +454,6 @@ step in `ci.yml` with a comment saying why. Workflow actions are pinned to commi
 Renovate keeps them current. GitHub's secret scanning and push protection are on for the
 repo in its settings; they aren't workflows.
 
-To deploy production by hand instead: sign in with `bunx cf auth` in `apps/web`, then
-`CONVEX_DEPLOY_KEY=... bun run --cwd packages/backend deploy && bun run --cwd apps/web deploy`.
-That deploy skips the checks: run `bun run ready` first.
-
 ## Dependency updates
 
 [Renovate](https://docs.renovatebot.com) opens pull requests that update the dependencies,
@@ -454,10 +467,9 @@ on the repo and merge the onboarding PR it opens. `renovate.json` holds the rule
   listed on the Dependency Dashboard issue, and a PR opens only when you tick them there.
 - A Convex update can change `packages/backend/convex/_generated/`, which CI doesn't
   regenerate. Run `bun run setup` on the branch and commit any change before merging.
-- Renovate doesn't read Bun's `workspaces.catalog` yet, so a custom rule tracks the Vite+
-  versions in it, but can't update `bun.lock` for them. Run `bun install` on the branch and
+- Renovate doesn't read Bun's `workspaces.catalog` yet. A custom rule tracks the Vite+
+  versions in it but can't update `bun.lock` for them, so run `bun install` on the branch and
   push the lockfile.
-
 - Security fixes open right away, whatever the schedule. Renovate checks the
   [OSV](https://osv.dev) database, so this works without GitHub's Dependabot alerts.
 - Workflow actions are pinned to commit SHAs and update together in one PR, along with the
