@@ -196,7 +196,7 @@ const me = query({
 });
 
 /** Sets the signed-in user's name. An empty name removes it. */
-const updateProfile = authMutation({
+const setName = authMutation({
   args: { name: v.string() },
   returns: v.null(),
   handler: async (ctx, { name }) => {
@@ -209,7 +209,7 @@ const updateProfile = authMutation({
   },
 });
 
-export const usersApi = { me, updateProfile };
+export const usersApi = { me, setName };
 export const usersInternal = {
   createUser,
   onSignIn,
