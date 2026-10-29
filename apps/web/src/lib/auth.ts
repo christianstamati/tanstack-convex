@@ -6,7 +6,6 @@ import { api } from "#/lib/api";
 const MESSAGES: Record<string, string> = {
   INVALID_CREDENTIALS: "Wrong email or password.",
   USER_NOT_FOUND: "Wrong email or password.",
-  EMAIL_NOT_FOUND: "No account uses that email.",
   EMAIL_TAKEN: "An account already uses that email.",
   INVALID_EMAIL: "Enter a valid email address.",
   PASSWORD_TOO_SHORT: "That password is too short.",
@@ -16,7 +15,10 @@ const MESSAGES: Record<string, string> = {
   RATE_LIMITED: "Too many attempts. Wait a minute and try again.",
   INVALID_CHALLENGE: "This link has expired or was already used. Request a new one.",
   INCORRECT_CODE: "This link has expired or was already used. Request a new one.",
-  MISSING_SECRET: "Open the link in the browser where you requested it.",
+  // The hook removes the browser's secret once the link works, so an already used link and a
+  // link opened in another browser look the same here.
+  MISSING_SECRET:
+    "This link was already used, or it was opened in a different browser from the one that asked for it.",
 };
 
 /** A message for a hook's `userError`. */

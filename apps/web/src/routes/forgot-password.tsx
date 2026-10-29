@@ -22,7 +22,7 @@ function ForgotPassword() {
     return (
       <AuthCard
         title="Check your email"
-        description={`We sent a link to ${sentTo}. Open it in this browser within 10 minutes to choose a new password.`}
+        description={`If an account uses ${sentTo}, we sent it a link. Open it in this browser within 10 minutes to choose a new password.`}
       >
         {import.meta.env.DEV && (
           <p className="text-sm text-muted-foreground">
@@ -48,7 +48,9 @@ function ForgotPassword() {
         onSubmit={async (event) => {
           event.preventDefault();
           const result = await startPasswordRecovery({ email });
-          if (result.success) setSentTo(result.sentTo);
+          // An unknown email gets the same answer as a known one, so the page doesn't say which
+          // addresses have accounts.
+          if (result.success || result.userError.error === "EMAIL_NOT_FOUND") setSentTo(email);
           else setError(authErrorMessage(result.userError));
         }}
       >

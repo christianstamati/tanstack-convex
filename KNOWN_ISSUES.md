@@ -88,8 +88,11 @@ When the plugin 2.0 and `cf` are stable, move to the stable versions and check e
   `bunx convex env set SITE_URL <url> --preview-name <branch>` in packages/backend.
 - **The auth pages were checked by hand in one browser, not automated.** Sign-up, verification,
   sign-in, sign-out, password reset and sign-out in a second tab all work on port 3000. Open:
-  - A verification or reset link that was already used says "Open the link in the browser where
-    you requested it", not "expired or already used".
-  - Forgot-password says "No account uses that email", which tells anyone which addresses have
-    accounts.
   - A second browser, where the link must not work, is not tested yet.
+- **A used link and a link opened in another browser get the same message.** The beta's hooks
+  remove the browser's secret once a link works, so both come back as `MISSING_SECRET`, and
+  `authErrorMessage` names both causes.
+- **Whether an email has an account can still be found out.** Forgot-password shows the same
+  page for an unknown email, but `startPasswordRecovery` still returns `EMAIL_NOT_FOUND`, which
+  anyone can see in the response, and sign-up says `EMAIL_TAKEN`. The beta accepts this and
+  limits the lookups per IP. Closing it needs the beta to answer unknown emails like known ones.

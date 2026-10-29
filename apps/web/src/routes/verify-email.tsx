@@ -28,9 +28,15 @@ function VerifyEmail() {
       <AuthCard
         title="Couldn't verify your email"
         footer={
-          <Link to="/signup" className="underline">
-            Sign up again
-          </Link>
+          <>
+            <Link to="/signin" className="underline">
+              Sign in
+            </Link>{" "}
+            or{" "}
+            <Link to="/signup" className="underline">
+              sign up again
+            </Link>
+          </>
         }
       >
         <FormError>{authErrorMessage(state.userError)}</FormError>
