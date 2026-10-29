@@ -229,9 +229,9 @@ you ran, the URLs, and anything that failed.
    ```
 
    Add `RESEND_API_KEY` and `AUTH_EMAIL_FROM` the same way (`bunx convex env set --prod`,
-   `bunx convex env default set --type preview`). Every preview shares one `SITE_URL`, so
-   the links in a preview's emails open production's origin; change a preview's own
-   `SITE_URL` in the Convex dashboard to test its emails.
+   `bunx convex env default set --type preview`). Each preview deployment
+   starts with production's `SITE_URL`, and the build then points it at the branch's
+   Preview URL, so a preview's emails link to that preview.
 
 3. In the Cloudflare dashboard, go to Workers & Pages > Create > Import a repository, pick
    this repo and set:
