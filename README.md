@@ -1,4 +1,9 @@
-# tanstack-convex-starter
+<!-- Made with the header builder at https://shieldcn.dev/header: one image per GitHub theme. -->
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="https://shieldcn.dev/header/dots.svg?title=tanstack-convex-starter&subtitle=TanStack+Start%2C+Convex+and+shadcn%2Fui+on+Cloudflare+Workers&logo=convex&mode=dark">
+  <source media="(prefers-color-scheme: light)" srcset="https://shieldcn.dev/header/dots.svg?title=tanstack-convex-starter&subtitle=TanStack+Start%2C+Convex+and+shadcn%2Fui+on+Cloudflare+Workers&logo=convex&mode=light">
+  <img alt="tanstack-convex-starter: TanStack Start, Convex and shadcn/ui on Cloudflare Workers" src="https://shieldcn.dev/header/dots.svg?title=tanstack-convex-starter&subtitle=TanStack+Start%2C+Convex+and+shadcn%2Fui+on+Cloudflare+Workers&logo=convex&mode=light">
+</picture>
 
 A boilerplate TypeScript monorepo with a TanStack Start web app, a Convex backend and
 shadcn/ui on Base UI, set up to deploy to Cloudflare Workers. Users sign up with email and
@@ -15,7 +20,7 @@ feature, a private notes list, to show the wiring end to end.
 | Auth     | Convex Auth 2.0 beta, email and password, sessions in httpOnly cookies                  |
 | UI       | shadcn/ui on Base UI and Tailwind CSS v4 in `packages/ui`. Nova, neutral, Lucide, Geist |
 | Tests    | Vitest, with convex-test for Convex functions                                           |
-| CI       | GitHub Actions and the Cloudflare build: check, test, build. Renovate for updates       |
+| CI       | GitHub Actions: check, test, build, audit, CodeQL. Renovate for updates                 |
 | Deploy   | Cloudflare Workers Builds for the web app, Convex Cloud for the backend, with previews  |
 
 The backend follows
