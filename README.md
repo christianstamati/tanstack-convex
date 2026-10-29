@@ -1,4 +1,9 @@
-# tanstack-convex-starter
+<!-- Made with the header builder at https://shieldcn.dev/header: one image per GitHub theme. -->
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="https://shieldcn.dev/header/dots.svg?title=tanstack-convex-starter&subtitle=TanStack+Start%2C+Convex+and+shadcn%2Fui+on+Cloudflare+Workers&logo=convex&mode=dark">
+  <source media="(prefers-color-scheme: light)" srcset="https://shieldcn.dev/header/dots.svg?title=tanstack-convex-starter&subtitle=TanStack+Start%2C+Convex+and+shadcn%2Fui+on+Cloudflare+Workers&logo=convex&mode=light">
+  <img alt="tanstack-convex-starter: TanStack Start, Convex and shadcn/ui on Cloudflare Workers" src="https://shieldcn.dev/header/dots.svg?title=tanstack-convex-starter&subtitle=TanStack+Start%2C+Convex+and+shadcn%2Fui+on+Cloudflare+Workers&logo=convex&mode=light">
+</picture>
 
 A boilerplate TypeScript monorepo with a TanStack Start web app, a Convex backend and
 shadcn/ui on Base UI, set up to deploy to Cloudflare Workers. Users sign up with email and
@@ -15,7 +20,7 @@ feature, a private notes list, to show the wiring end to end.
 | Auth     | Convex Auth 2.0 beta, email and password, sessions in httpOnly cookies                  |
 | UI       | shadcn/ui on Base UI and Tailwind CSS v4 in `packages/ui`. Nova, neutral, Lucide, Geist |
 | Tests    | Vitest, with convex-test for Convex functions                                           |
-| CI       | GitHub Actions and the Cloudflare build: check, test, build. Renovate for updates       |
+| CI       | GitHub Actions: check, test, build, audit, CodeQL. Renovate for updates                 |
 | Deploy   | Cloudflare Workers Builds for the web app, Convex Cloud for the backend, with previews  |
 
 The backend follows
@@ -278,11 +283,12 @@ Tell me what you ran, the URLs, and anything that failed.
 
    ```sh
    gh api --method POST repos/{owner}/{repo}/rulesets --input .github/rulesets/main.json
-   gh api --method PATCH repos/{owner}/{repo} -F allow_merge_commit=false -F allow_rebase_merge=false -f squash_merge_commit_title=PR_TITLE -f squash_merge_commit_message=PR_BODY
+   gh api --method PATCH repos/{owner}/{repo} -F allow_merge_commit=false -F allow_rebase_merge=false -f squash_merge_commit_title=PR_TITLE -f squash_merge_commit_message=PR_BODY -F allow_auto_merge=true -F delete_branch_on_merge=true
    ```
 
    The second command leaves squash as the only merge button, with the pull request's title
-   and description as the commit message.
+   and description as the commit message. It also turns on auto-merge, so a pull request can
+   be set to merge once its checks pass, and deletes each branch once its PR merges.
 
    The build runs no checks, so this ruleset is what keeps failing code out of production.
    It needs the `ready` check to have run once, which the first push does. In a private repo
