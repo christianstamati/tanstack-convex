@@ -278,7 +278,11 @@ Tell me what you ran, the URLs, and anything that failed.
 
    ```sh
    gh api --method POST repos/{owner}/{repo}/rulesets --input .github/rulesets/main.json
+   gh api --method PATCH repos/{owner}/{repo} -F allow_merge_commit=false -F allow_rebase_merge=false -f squash_merge_commit_title=PR_TITLE -f squash_merge_commit_message=PR_BODY
    ```
+
+   The second command leaves squash as the only merge button, with the pull request's title
+   and description as the commit message.
 
    The build runs no checks, so this ruleset is what keeps failing code out of production.
    It needs the `ready` check to have run once, which the first push does. In a private repo
@@ -307,7 +311,8 @@ Workers Builds deploys without waiting for GitHub Actions, so `main` is protecte
 ruleset in `.github/rulesets/main.json`: changes go in through a pull request, which can
 only merge once `ready` passes and CodeQL has scanned it, and nobody can push to `main`
 directly, admins included. CodeQL blocks the merge on a security alert of high severity or
-above, or on any other alert at error level.
+above, or on any other alert at error level. Pull requests are squash-merged, so each commit
+on `main` is one checked pull request, titled and described as the PR was.
 Each PR gets a Cloudflare preview, built whether or not its checks pass, and merging
 deploys production. To change the ruleset, edit the file and update it with
 `gh api --method PUT repos/{owner}/{repo}/rulesets/<id> --input .github/rulesets/main.json`
