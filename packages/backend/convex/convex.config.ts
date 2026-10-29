@@ -7,7 +7,7 @@ import { defineApp } from "convex/server";
 import { v } from "convex/values";
 
 // A push fails while a required variable is missing on the deployment. `bun run setup` sets them
-// on the dev deployment, and `bun run convex:auth-env` on production and previews.
+// on the dev deployment, and `bun run convex:auth env` on production and previews.
 const app = defineApp({
   env: {
     // Convex Auth's key pair, which signs the access tokens.

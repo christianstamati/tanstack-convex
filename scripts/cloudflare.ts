@@ -1,6 +1,10 @@
-// Build command for Cloudflare Workers Builds, run from apps/web (the Worker's root
-// directory). Installs the workspace, then runs `convex deploy`, which pushes the Convex
-// functions and builds apps/web with VITE_CONVEX_URL pointing at them:
+// The app's Cloudflare tasks.
+//
+//   bun scripts/cloudflare.ts build    the build command of Workers Builds (`bun run
+//                                      build:cloudflare` in apps/web). Not for running by hand
+//
+// `build` installs the workspace, then runs `convex deploy`, which pushes the Convex functions
+// and builds apps/web with VITE_CONVEX_URL pointing at them:
 //   - production branch (PRODUCTION_BRANCH, default main): CONVEX_DEPLOY_KEY, a production
 //     deploy key. Workers Builds then runs `cf deploy --prebuilt`.
 //   - any other branch: CONVEX_PREVIEW_DEPLOY_KEY, a preview deploy key. Convex creates a
@@ -13,6 +17,13 @@
 // reaches production.
 import { spawnSync } from "node:child_process";
 import { join } from "node:path";
+import { parseArgs } from "node:util";
+
+const { positionals } = parseArgs({ allowPositionals: true });
+if (positionals[0] !== "build") {
+  console.error("Usage: bun scripts/cloudflare.ts build");
+  process.exit(1);
+}
 
 const rootDir = join(import.meta.dirname, "..");
 const branch = process.env.WORKERS_CI_BRANCH;

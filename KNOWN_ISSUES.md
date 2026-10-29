@@ -29,7 +29,7 @@ remove the ones that are fixed.
   exactly 2.0.0-beta.0. Its `convexAuth()` Vite plugin resolves a file that the beta's exports
   map hides.
 - **The setup CLI doesn't run in this repo.** `npx @convex-dev/auth` sets the keys with `npx`,
-  which npm refuses here because `devEngines` names Bun. `scripts/auth-env.ts` generates the
+  which npm refuses here because `devEngines` names Bun. `scripts/auth.ts` generates the
   keys in the same format instead.
 - **Test helpers need workarounds.** The beta's convex-test helpers ship as TypeScript with
   `.ts` imports (`allowImportingTsExtensions` in `convex/tsconfig.json`), and its password hashing
@@ -58,7 +58,7 @@ undici 7.29.1, which has 4 high-severity advisories. The beta's miniflare uses 7
 - **`cf deploy` without `--prebuilt` fails here.** It builds with `npx vite build`, which npm
   refuses in a repo whose `devEngines` names Bun. Build with `bun run build`, then deploy
   with `--prebuilt`.
-- **Preview builds need `CLOUDFLARE_PREVIEW_BUILD=true`.** `scripts/cloudflare-build.ts` sets
+- **Preview builds need `CLOUDFLARE_PREVIEW_BUILD=true`.** `scripts/cloudflare.ts` sets
   it off the production branch; without it, `cf previews deploy --prebuilt` has no preview
   build to deploy.
 
@@ -77,12 +77,12 @@ When the plugin 2.0 and `cf` are stable, move to the stable versions and check e
 
 ## Our setup
 
-- **Some previews' emails link to production.** `scripts/cloudflare-build.ts` sets each
+- **Some previews' emails link to production.** `scripts/cloudflare.ts` sets each
   preview deployment's `SITE_URL` to its branch's Preview URL, worked out from the branch name.
   It can't for a branch whose name Cloudflare shortens with a hash (when
   `<branch>-<worker>` is over 63 characters) or when `SITE_URL` isn't on workers.dev; those
   keep production's `SITE_URL`. Change it in the Convex dashboard to test their emails.
-- **Changing the workers.dev subdomain leaves old URLs in Convex.** Run `bun run convex:auth-env`
+- **Changing the workers.dev subdomain leaves old URLs in Convex.** Run `bun run convex:auth env`
   with `--prod` and with `--preview` and the new URL. A preview deployment that already
   exists keeps its old `SITE_URL`; set it with
   `bunx convex env set SITE_URL <url> --preview-name <branch>` in packages/backend.

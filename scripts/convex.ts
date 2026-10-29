@@ -1,14 +1,16 @@
-// Switches the app between a Convex deployment on your machine, which needs no account, and your
-// personal dev deployment on Convex Cloud. It selects the deployment in
-// packages/backend/.env.local, sets the auth variables on it if they're missing, pushes the
-// functions, and points the web app at it.
+// The Convex dev deployment the app uses, named in packages/backend/.env.local.
 //
-//   bun run convex:local    an anonymous deployment on this machine: no account, no login
-//   bun run convex:cloud    your cloud dev deployment: logs in, and links a project the first time
+//   bun run convex:local    switches to an anonymous deployment on this machine: no account, no login
+//   bun run convex:cloud    switches to your dev deployment on Convex Cloud: logs in, and links a
+//                           project the first time
 //   bun run convex:which    prints the deployment in use, changing nothing
+//   bun run convex:reset    deletes every document on it, components included. Asks first, unless
+//                           `--skip-confirmation` (or `--yes`, `-y`)
 //
-// Each deployment keeps its own data and env vars; nothing is copied between them. Restart
-// `bun run dev` after switching: Convex and Vite read the env files only when they start.
+// A switch selects the deployment, sets the auth variables on it if they're missing, pushes the
+// functions, and points the web app at it. Each deployment keeps its own data and env vars;
+// nothing is copied between them. Restart `bun run dev` after switching: Convex and Vite read
+// the env files only when they start.
 import { spawnSync } from "node:child_process";
 import {
   existsSync,
@@ -21,8 +23,9 @@ import {
 } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { createInterface } from "node:readline/promises";
 import { parseArgs } from "node:util";
-import { ensureAuthEnv } from "./auth-env.js";
+import { ensureAuthEnv } from "./auth.js";
 
 const root = join(import.meta.dirname, "..");
 const backendDir = join(root, "packages/backend");
@@ -97,7 +100,7 @@ async function selectLocal() {
   }
   // With CONVEX_DEPLOYMENT empty (dotenv doesn't replace a variable that's set), the CLI picks the
   // anonymous deployment, creating one the first time, and writes it to .env.local. A new one's
-  // push fails until the auth variables exist, as in setup.ts.
+  // push fails until the auth variables exist, which are set after it.
   convex(["dev", "--once"], { env: { CONVEX_DEPLOYMENT: "" } });
   return current()?.where === "local";
 }
@@ -141,48 +144,92 @@ function selectCloud() {
   const project = readEnv().match(new RegExp(`^${CLOUD_PROJECT}=(\\S+)`, "m"))?.[1];
   if (!project || !convex(["deployment", "select", `${project}:dev`])) {
     // The first time: pick or create a project, and its dev deployment. Its first push fails
-    // until the auth variables exist, as in setup.ts.
+    // until the auth variables exist, which are set after it.
     convex(["dev", "--configure", "--dev-deployment", "cloud", "--once"], { prompts: true });
   }
   return current()?.where === "cloud";
 }
 
-const { positionals } = parseArgs({ allowPositionals: true });
-const command = positionals[0];
-if (command !== "local" && command !== "cloud" && command !== "which") {
-  console.error("Usage: bun scripts/use-convex.ts <local|cloud|which>");
-  process.exit(1);
-}
-
-const before = current();
-if (!before) {
-  console.error("No deployment in packages/backend/.env.local. Run `bun run setup` first.");
-  process.exit(1);
-}
-if (command === "which") {
-  console.log(`${before.where ?? "unknown"}: ${before.name} (${before.url ?? "no CONVEX_URL"})`);
-  process.exit(0);
-}
-
 const syncEnv = () =>
   spawnSync(bun, ["scripts/sync-env.ts"], { cwd: root, stdio: "inherit" }).status === 0;
 
-if (before.where === command) {
-  // No push: `bun run dev` may be running against it, and a local deployment's backend can't
-  // start twice. It pushes the functions itself.
-  console.log(`Already on the ${command} deployment ${before.name}.`);
-  process.exit(ensureAuthEnv("dev", "http://localhost:3000") && syncEnv() ? 0 : 1);
+async function switchTo(target: Where) {
+  const before = current();
+  if (before && before.where === target) {
+    // No push: `bun run dev` may be running against it, and a local deployment's backend can't
+    // start twice. It pushes the functions itself.
+    console.log(`Already on the ${target} deployment ${before.name}.`);
+    return ensureAuthEnv("dev", "http://localhost:3000") && syncEnv();
+  }
+  rememberCloudProject();
+  if (!(target === "local" ? await selectLocal() : selectCloud())) {
+    console.error(
+      `Couldn't switch to a ${target} deployment.` +
+        (before ? ` Still on ${before.deployment}.` : ""),
+    );
+    return false;
+  }
+  rememberCloudProject();
+  if (!(ensureAuthEnv("dev", "http://localhost:3000") && convex(["dev", "--once"]) && syncEnv())) {
+    return false;
+  }
+  console.log(
+    `\nNow on the ${target} deployment ${current()?.name}. Restart \`bun run dev\` if it's` +
+      " running. Its data is its own: `bun run convex:seed` adds the sample user.",
+  );
+  return true;
 }
-rememberCloudProject();
-if (!(command === "local" ? await selectLocal() : selectCloud())) {
-  console.error(`Couldn't switch to a ${command} deployment. Still on ${before.deployment}.`);
+
+/**
+ * Imports an empty snapshot with `convex import --replace-all`, which clears every table it
+ * doesn't contain: the app's and the components' (users, sessions, passwords, emails…). The
+ * functions, the schema and the env vars stay. A local deployment must be running
+ * (`bun run dev`). It never touches production: `convex import` targets the dev deployment.
+ */
+async function reset(skipConfirmation: boolean) {
+  const { deployment } = current()!;
+  if (!skipConfirmation) {
+    const rl = createInterface({ input: process.stdin, output: process.stdout });
+    const answer = await rl.question(
+      `Delete every document on the dev deployment ${deployment}, including all users? Type "reset" to confirm: `,
+    );
+    rl.close();
+    if (answer.trim() !== "reset") {
+      console.log("Nothing deleted.");
+      return false;
+    }
+  }
+  // An empty ZIP archive: only the end-of-central-directory record.
+  const dir = mkdtempSync(join(tmpdir(), "convex-reset-"));
+  const emptySnapshot = join(dir, "empty.zip");
+  writeFileSync(emptySnapshot, Buffer.concat([Buffer.from("PK\x05\x06"), Buffer.alloc(18)]));
+  const ok = convex(["import", "--replace-all", "--yes", emptySnapshot]);
+  rmSync(dir, { recursive: true, force: true });
+  if (ok) console.log(`Cleared every table on ${deployment}.`);
+  return ok;
+}
+
+const { values, positionals } = parseArgs({
+  allowPositionals: true,
+  options: { "skip-confirmation": { type: "boolean" }, yes: { type: "boolean", short: "y" } },
+});
+const command = positionals[0];
+const before = current();
+// `local` and `cloud` also start from nothing: `bun run setup` runs `local` on a fresh clone.
+if (!before && (command === "which" || command === "reset")) {
+  console.error("No deployment in packages/backend/.env.local. Run `bun run setup` first.");
   process.exit(1);
 }
-rememberCloudProject();
-if (!(ensureAuthEnv("dev", "http://localhost:3000") && convex(["dev", "--once"]) && syncEnv())) {
-  process.exit(1);
+let ok: boolean;
+if (command === "local" || command === "cloud") {
+  ok = await switchTo(command);
+} else if (command === "which") {
+  console.log(`${before!.where ?? "unknown"}: ${before!.name} (${before!.url ?? "no CONVEX_URL"})`);
+  ok = true;
+} else if (command === "reset") {
+  ok = await reset(Boolean(values["skip-confirmation"] || values.yes));
+} else {
+  console.error("Usage: bun scripts/convex.ts <local|cloud|which|reset> [--skip-confirmation]");
+  ok = false;
 }
-console.log(
-  `\nNow on the ${command} deployment ${current()?.name}. Restart \`bun run dev\` if it's` +
-    " running. Its data is its own: `bun run convex:seed` adds the sample user.",
-);
+process.exit(ok ? 0 : 1);

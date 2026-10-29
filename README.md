@@ -40,8 +40,8 @@ Clone the repo, open a coding agent (Claude Code, Codex, Cursor…) in it and pa
 ```text
 Set up this repo for local development. Read AGENTS.md and the Quick start in README.md
 first. Install the global Vite+ CLI (`vp`) if it is missing, then run `bun install` and
-`CONVEX_AGENT_MODE=anonymous bun run setup` from the repo root, so Convex uses a local
-deployment without asking to log in. Start `bun run dev` in the background, check that
+`bun run setup` from the repo root, which makes a local Convex deployment without an
+account. Start `bun run dev` in the background, check that
 http://localhost:3000 and its Notes page load, then run `bun run ready`. Don't log in to
 Convex or Cloudflare. Tell me what you ran and anything that failed.
 ```
@@ -86,44 +86,27 @@ bun run setup   # local Convex deployment and apps/web/.env.local
 bun run dev     # Convex + http://localhost:3000
 ```
 
-`setup` creates a Convex deployment that runs on your machine and stores its data in
-`packages/backend/.convex/`, and sets the variables auth needs on it. It is safe to re-run,
-and needed again after pulling the change that added auth. Open http://localhost:3000, sign
+`setup` creates an anonymous Convex deployment that runs on your machine and stores its data in
+`packages/backend/.convex/`, as `bun run convex:local` does: it needs no account and never asks
+you to log in. It also sets the variables auth needs on it. It is safe to re-run, and needed
+again after pulling the change that added auth. Once there's a deployment, local or cloud, it
+keeps it. Open http://localhost:3000, sign
 up and try the Notes page.
 
 Sign-up sends a link to verify the email. Until you set `RESEND_API_KEY` (see
 [Auth](#auth)), emails aren't sent: the email and its link appear in the output of
 `bun run dev`. Open the link in the browser you signed up in.
 
-The Convex CLI may ask you one of two questions. To keep developing locally:
-
-| Question                                                                                                                 | When                                                                     | Answer                                              |
-| ------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------ | --------------------------------------------------- |
-| Welcome to Convex! Would you like to login to your account?                                                              | The first `setup`                                                        | **Start without an account (run Convex locally)**   |
-| CONVEX_DEPLOYMENT is configured with deployment …, which is not linked with your account. Would you like to link it now? | Every `setup` and `dev`, if you have logged in to Convex on this machine | **n**. To use the cloud, run `bun run convex:cloud` |
+If you've logged in to Convex on this machine, `bun run dev` may ask "CONVEX_DEPLOYMENT is
+configured with deployment …, which is not linked with your account. Would you like to link it
+now?" Answer **n** to keep developing locally. To use the cloud, run `bun run convex:cloud`.
 
 On Windows, use PowerShell or Windows Terminal. Git Bash works too. The Git hooks run under
 the `sh` that ships with Git for Windows. A few commands in this README are written for `sh`:
 in PowerShell, set a `NAME=value` prefix first with `$env:NAME = "value"`, and run the parts
 of an `a && b` one at a time. Git Bash runs them as written.
 
-Other commands:
-
-```sh
-bun run convex:dashboard  # Convex dashboard on http://127.0.0.1:6790, while `dev` runs
-bun run convex:reset      # delete every document on the dev deployment, components included.
-                          # --skip-confirmation doesn't ask first
-bun run convex:seed       # a sample user who can sign in, with notes. Safe to re-run
-bun run check             # format, lint, types. `vp check --fix` fixes what it can
-bun run test              # unit tests
-bun run build             # production build of apps/web
-```
-
-`convex:seed` signs up admin@mail.com, verifies its email, and gives it a name and two notes.
-It signs in with the password `Test!12345`. It skips an email that already has an account, so
-after `convex:reset` it seeds again. It runs only while
-`SITE_URL` is a localhost URL and `RESEND_API_KEY` is unset, so the known password never
-reaches a deployment others can open. The user is in `packages/backend/convex/models/seed/`.
+Every command, with its options, is in [Commands](#commands).
 
 ### Local or cloud Convex
 
@@ -147,6 +130,81 @@ and `bun run convex:dashboard` opens its dashboard on http://127.0.0.1:6790. Whi
 `CONVEX_CLOUD_PROJECT` in `packages/backend/.env.local` remembers the cloud project (as
 `team:project`), so `convex:cloud` goes back to it without asking.
 
+## Commands
+
+Run them from the repo root.
+
+### Develop
+
+- **`bun install`** installs the dependencies and the Git hooks. The pre-commit hook runs
+  `vp check --fix` on the staged files.
+- **`bun run setup`** gets a fresh clone running, and is safe to re-run. Without a Convex
+  deployment, it creates an anonymous one on your machine, as `convex:local` does. Then it sets
+  the auth variables on the deployment if they're missing, pushes the functions and writes
+  `apps/web/.env.local`. A deployment that's already there, local or cloud, stays.
+- **`bun run dev`** points `apps/web/.env.local` at the deployment, then runs `convex dev` and
+  the web app on http://localhost:3000. `convex dev` pushes the functions on every change and
+  prints their logs and the auth emails. On the local deployment, it also runs the Convex
+  backend and its dashboard.
+
+### Convex deployment
+
+- **`bun run convex:local`** switches to the anonymous deployment on your machine, creating one
+  the first time. It needs no account or login.
+- **`bun run convex:cloud`** switches to your personal dev deployment on Convex Cloud. It logs
+  in if you're logged out, and the first time it asks you to pick or create a project.
+- **`bun run convex:which`** prints the deployment in use and its URL. It changes nothing.
+- **`bun run convex:dashboard`** opens the Convex dashboard: on http://127.0.0.1:6790 for the
+  local deployment while `dev` runs, and on dashboard.convex.dev for a cloud one.
+
+[Local or cloud Convex](#local-or-cloud-convex) explains what a switch does.
+
+### Data
+
+- **`bun run convex:seed`** signs up admin@mail.com, verifies its email, and gives it a name
+  and two notes. It signs in with the password `Test!12345`. It skips an email that already has
+  an account, so it's safe to re-run, and after `convex:reset` it seeds again. It runs only
+  while `SITE_URL` is a localhost URL and `RESEND_API_KEY` is unset, so the known password
+  never reaches a deployment others can open. The user is in
+  `packages/backend/convex/models/seed/`.
+- **`bun run convex:reset`** deletes every document on the dev deployment, the components'
+  included: users, sessions, passwords and emails. The functions, the schema and the env vars
+  stay. It asks you to type "reset" first; `--skip-confirmation` (or `-y`) doesn't ask. On the
+  local deployment, `dev` must be running. It never touches production.
+
+### Auth
+
+`bun run convex:auth <subcommand>` manages Convex Auth's variables on a deployment: the key
+pair that signs the access tokens (`AUTH_PRIVATE_KEY`, `AUTH_JWKS`) and the web app's origin
+(`SITE_URL`). It works on the dev deployment, or on production with `--prod`, or on the
+defaults each new preview deployment copies with `--preview`.
+
+- **`env`** sets the variables that are missing and keeps the ones that are set.
+  `--site-url <url>` sets `SITE_URL`, which on the dev deployment defaults to
+  http://localhost:3000. `setup` and the switches run it for you.
+- **`check`** lists the variables, without the secrets' values, and checks that the two keys
+  belong together. It exits with 1 when a required one is missing or wrong.
+- **`rotate`** replaces the key pair, which signs everyone out. It asks you to type "rotate"
+  first; `--skip-confirmation` doesn't ask.
+
+### Check and build
+
+- **`bun run check`** formats, lints and type checks (`vp check`). `vp check --fix` fixes what
+  it can.
+- **`bun run test`** runs the unit tests: Vitest for the web app and convex-test for the Convex
+  functions.
+- **`bun run build`** builds apps/web for production, into `apps/web/.cloudflare/output/`.
+  `bun run --cwd apps/web preview` serves that build on http://localhost:4173.
+- **`bun run ready`** runs check, test and build. CI runs it as the `ready` check on every pull
+  request and push to `main`; run it before you push.
+
+### Cloudflare
+
+- **`bun run build:cloudflare`**, in apps/web, is the build command of Workers Builds. It runs
+  `scripts/cloudflare.ts build`, which deploys the Convex functions for the branch and builds
+  the app against them. It needs the variables Workers Builds sets, so run by hand it stops;
+  [Deploy](#deploy) covers deploying.
+
 ## Environment variables
 
 `bun run setup` writes the local files. `.env.example` documents every variable.
@@ -156,7 +214,7 @@ and `bun run convex:dashboard` opens its dashboard on http://127.0.0.1:6790. Whi
 | `VITE_CONVEX_URL`               | `apps/web/.env.local`, deploy build | `scripts/sync-env.ts`, `convex deploy` | Convex URL the browser connects to        |
 | `CONVEX_DEPLOYMENT`             | `packages/backend/.env.local`       | `convex dev`                           | Deployment the Convex CLI targets         |
 | `CONVEX_URL`, `CONVEX_SITE_URL` | `packages/backend/.env.local`       | `convex dev`                           | Deployment URLs                           |
-| `CONVEX_CLOUD_PROJECT`          | `packages/backend/.env.local`       | `scripts/use-convex.ts`                | Cloud project `convex:cloud` goes back to |
+| `CONVEX_CLOUD_PROJECT`          | `packages/backend/.env.local`       | `scripts/convex.ts`                    | Cloud project `convex:cloud` goes back to |
 | `CONVEX_DEPLOY_KEY`             | Workers Builds secret               | you                                    | Deploys `main` to Convex production       |
 | `CONVEX_PREVIEW_DEPLOY_KEY`     | Workers Builds secret               | you                                    | Deploys other branches to Convex previews |
 
@@ -166,8 +224,8 @@ Set them from `packages/backend` with `bunx convex env set NAME value`.
 
 | Variable                        | Required | Set by                    | Purpose                                       |
 | ------------------------------- | -------- | ------------------------- | --------------------------------------------- |
-| `AUTH_PRIVATE_KEY`, `AUTH_JWKS` | yes      | `bun run convex:auth-env` | Key pair that signs the access tokens         |
-| `SITE_URL`                      | yes      | `bun run convex:auth-env` | The web app's origin; email links point at it |
+| `AUTH_PRIVATE_KEY`, `AUTH_JWKS` | yes      | `bun run convex:auth env` | Key pair that signs the access tokens         |
+| `SITE_URL`                      | yes      | `bun run convex:auth env` | The web app's origin; email links point at it |
 | `RESEND_API_KEY`                | no       | you                       | Sends auth emails. Without it they're logged  |
 | `AUTH_EMAIL_FROM`               | no       | you                       | From address on your Resend domain            |
 
@@ -242,8 +300,8 @@ Cloudflare MCP servers can't deploy, so use the `convex` and `cf` CLIs.
    Convex MCP `status` tool on packages/backend, or in the dashboard. Build the web app
    against it: `VITE_CONVEX_URL=<url> bun run --cwd apps/web build`, then run
    `bunx cf deploy --prebuilt` in apps/web. It prints the workers.dev URL; SITE_URL needs it.
-3. From the repo root, run `bun run convex:auth-env --prod --site-url <workers.dev URL>`
-   and `bun run convex:auth-env --preview --site-url <workers.dev URL>`. Then run
+3. From the repo root, run `bun run convex:auth env --prod --site-url <workers.dev URL>`
+   and `bun run convex:auth env --preview --site-url <workers.dev URL>`. Then run
    `bunx convex deploy -y` in packages/backend.
 4. Check that <workers.dev URL>/health answers {"status":"ok","convex":"up"} and /signin
    loads without console errors. Don't sign up on production; I'll do that.
@@ -271,8 +329,8 @@ Tell me what you ran, the URLs, and anything that failed.
    deployment copies, each with its own key pair:
 
    ```sh
-   bun run convex:auth-env --prod --site-url https://tanstack-convex-starter.<subdomain>.workers.dev
-   bun run convex:auth-env --preview --site-url https://tanstack-convex-starter.<subdomain>.workers.dev
+   bun run convex:auth env --prod --site-url https://tanstack-convex-starter.<subdomain>.workers.dev
+   bun run convex:auth env --preview --site-url https://tanstack-convex-starter.<subdomain>.workers.dev
    ```
 
    Add `RESEND_API_KEY` and `AUTH_EMAIL_FROM` the same way (`bunx convex env set --prod`,
@@ -317,7 +375,7 @@ Tell me what you ran, the URLs, and anything that failed.
    without GitHub Advanced Security, CodeQL doesn't run, so first remove the `code_scanning`
    rule from the file, or no pull request can merge.
 
-The build command runs `scripts/cloudflare-build.ts`. It installs the workspace from the
+The build command runs `scripts/cloudflare.ts build`. It installs the workspace from the
 repo root, then runs `convex deploy`, which pushes the Convex functions and builds the app
 with `VITE_CONVEX_URL` pointing at them. On `main` it uses `CONVEX_DEPLOY_KEY` and the
 production deployment. On any other branch it uses `CONVEX_PREVIEW_DEPLOY_KEY`, which

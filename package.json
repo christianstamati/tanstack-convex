@@ -15,19 +15,19 @@
   "type": "module",
   "scripts": {
     "setup": "bun scripts/setup.ts",
-    "convex:auth-env": "bun scripts/auth-env.ts",
-    "convex:local": "bun scripts/use-convex.ts local",
-    "convex:cloud": "bun scripts/use-convex.ts cloud",
-    "convex:which": "bun scripts/use-convex.ts which",
     "dev": "bun scripts/sync-env.ts && vp run --parallel --log labeled --filter './apps/*' --filter './packages/*' dev",
-    "convex:dashboard": "vp run --filter @workspace/backend dashboard",
-    "convex:reset": "bun scripts/reset-convex.ts",
-    "convex:seed": "vp run --no-cache --filter @workspace/backend seed",
     "build": "vp run --filter './apps/*' build",
     "check": "vp check",
     "test": "vp run --filter './apps/*' --filter './packages/*' test",
     "ready": "vp check && bun run test && bun run build",
-    "prepare": "vp config"
+    "prepare": "vp config",
+    "convex:auth": "bun scripts/auth.ts",
+    "convex:local": "bun scripts/convex.ts local",
+    "convex:cloud": "bun scripts/convex.ts cloud",
+    "convex:which": "bun scripts/convex.ts which",
+    "convex:dashboard": "vp run --filter @workspace/backend dashboard",
+    "convex:reset": "bun scripts/convex.ts reset",
+    "convex:seed": "vp run --no-cache --filter @workspace/backend seed"
   },
   "devDependencies": {
     "@tanstack/intent": "^0.5.6",

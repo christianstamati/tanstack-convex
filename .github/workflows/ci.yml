@@ -1,7 +1,7 @@
 # Checks pull requests and main: `bun run ready` (format, lint, type check, tests and the
 # production build), a dependency audit, and a security audit of these workflows. It needs no
 # secrets: convex/_generated/ is committed and convex-test runs the Convex functions in memory.
-# Deploys stay with Workers Builds (scripts/cloudflare-build.ts).
+# Deploys stay with Workers Builds (scripts/cloudflare.ts).
 name: CI
 
 on:
