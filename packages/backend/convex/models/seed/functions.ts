@@ -3,21 +3,16 @@ import { api, components, internal } from "../../lib/api.refs";
 import type { Id } from "../../_generated/dataModel";
 import { env, internalMutation } from "../../_generated/server";
 
-/** Every seeded user's password. The seed refuses to run anywhere but a local web app. */
+/** The seeded user's password. The seed refuses to run anywhere but a local web app. */
 export const SEED_PASSWORD = "Test!12345";
 
 /** The users the seed creates, each with a verified email, so they can sign in right away. */
 export const SEED_USERS = [
   {
-    email: "ada@example.com",
-    name: "Ada Lovelace",
+    email: "admin@mail.com",
+    name: "Admin",
     // Example feature: drop `notes` here and below when removing the notes list.
-    notes: ["Read Menabrea's paper on the Analytical Engine", "Write the notes on Note G"],
-  },
-  {
-    email: "grace@example.com",
-    name: "Grace Hopper",
-    notes: ["Tape the moth into the logbook", "Ask for a compiler, not a translator"],
+    notes: ["Try the Notes page", "Delete this note"],
   },
 ];
 

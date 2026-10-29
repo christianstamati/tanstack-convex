@@ -30,7 +30,7 @@ apps/web/          TanStack Start app, deployed by Cloudflare Workers Builds (cl
 packages/backend/  Convex functions and schema, all in convex/
   convex/models/<table>/   table.ts (the table) and functions.ts (its functions)
   convex/models/users/auth.ts  Convex Auth setup: email and password, emails via Resend
-  convex/models/seed/       The seed users that `bun run convex:seed` signs up. Local only
+  convex/models/seed/       The seed user that `bun run convex:seed` signs up. Local only
   convex/api/<table>.ts    Re-exports the table's functions: the public API
   convex/internal/<table>.ts  Re-exports internal functions, as `internal.<table>.*`
   convex/lib/api.refs.ts   `api`, `internal` and `components` for backend code and tests
@@ -50,8 +50,8 @@ scripts/           setup.ts, auth-env.ts, sync-env.ts, use-convex.ts, cloudflare
                    in skills-lock.json. TanStack's come from node_modules through Intent
 .github/workflows/ ci.yml (ready, audit, zizmor) and codeql.yml. Deploys stay in Workers Builds.
                    Pin actions to a commit SHA with the version in a comment; zizmor fails otherwise
-.github/rulesets/  main.json: main takes only squash-merged pull requests that pass `ready` and
-                   CodeQL. Applied with `gh api`
+.github/rulesets/  main.json: main takes squash-merged pull requests that pass `ready` and
+                   CodeQL, and direct pushes from repo admins only. Applied with `gh api`
 renovate.json      Renovate's rules for dependency update PRs (see "Dependency updates" in the README)
 ```
 
@@ -72,11 +72,11 @@ shell passes that through unchanged, while `'{"to": …}'` breaks in cmd.exe and
 | `bun install`              | Install dependencies and the Vite+ git hooks                        |
 | `bun run setup`            | One-time local setup: local Convex deployment and env               |
 | `bun run convex:auth-env`  | Set the auth variables on a deployment (`--prod`, `--preview`)      |
-| `bun run convex:cloud`     | Use your Convex Cloud dev deployment, linking a project if needed   |
-| `bun run convex:local`     | Use the Convex deployment on this machine                           |
+| `bun run convex:cloud`     | Use your Convex Cloud dev deployment: logs in, links a project      |
+| `bun run convex:local`     | Use an anonymous Convex deployment on this machine: no account      |
 | `bun run convex:which`     | Print which Convex deployment the app uses                          |
-| `bun run convex:reset`     | Delete every document on the dev deployment, components included    |
-| `bun run convex:seed`      | Sample users who can sign in, with notes. Safe to re-run            |
+| `bun run convex:reset`     | Delete every document on the dev deployment (`--skip-confirmation`) |
+| `bun run convex:seed`      | A sample user who can sign in, with notes. Safe to re-run           |
 | `bun run dev`              | Convex dev and the web dev server on http://localhost:3000          |
 | `bun run convex:dashboard` | Local Convex dashboard on http://127.0.0.1:6790 (needs `dev`)       |
 | `bun run check`            | Format, lint and type check (`vp check`). Fix with `vp check --fix` |
@@ -86,9 +86,11 @@ shell passes that through unchanged, while `'{"to": …}'` breaks in cmd.exe and
 
 The pre-commit hook runs `vp check --fix` on staged files. Don't skip it with `--no-verify`.
 
-`main` takes changes only through pull requests that pass the `ready` check in `ci.yml` and
-CodeQL's scan, and nobody can push to it directly. Work on a branch and open a PR. The
-Cloudflare build runs no checks, so these are what stop failing or unsafe code from deploying.
+`main` takes changes through pull requests that pass the `ready` check in `ci.yml` and
+CodeQL's scan. Only repo admins, which on this personal repo means its owner, can push to it
+directly, skipping both. Work on a branch and open a PR unless the owner asks you to commit
+to `main`, and run `bun run ready` before such a push. The Cloudflare build runs no checks, so
+these are what stop failing or unsafe code from deploying.
 PRs are squash-merged, and the PR's title and description become the commit message on
 `main`: write them as you would that commit's.
 
@@ -200,7 +202,7 @@ The notes list is example code: `packages/backend/convex/models/notes/`,
 `convex/api/notes.ts`, `convex/tests/notes/`, the `notes` table in `convex/schema.ts`, the
 `createNote` limit in `convex/lib/rateLimits.ts`,
 `apps/web/src/routes/_authed/notes.tsx`, the Notes links on the home page and in the header
-of `__root.tsx`, `AFTER_SIGN_IN` in `apps/web/src/lib/auth.ts`, and the seed users' notes in
+of `__root.tsx`, `AFTER_SIGN_IN` in `apps/web/src/lib/auth.ts`, and the seed user's notes in
 `convex/models/seed/functions.ts`. The README explains how to remove it. Auth is not example
 code.
 

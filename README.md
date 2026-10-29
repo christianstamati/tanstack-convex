@@ -97,10 +97,10 @@ Sign-up sends a link to verify the email. Until you set `RESEND_API_KEY` (see
 
 The Convex CLI may ask you one of two questions. To keep developing locally:
 
-| Question                                                                                                                 | When                                                                     | Answer                                                  |
-| ------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------ | ------------------------------------------------------- |
-| Welcome to Convex! Would you like to login to your account?                                                              | The first `setup`                                                        | **Start without an account (run Convex locally)**       |
-| CONVEX_DEPLOYMENT is configured with deployment …, which is not linked with your account. Would you like to link it now? | Every `setup` and `dev`, if you have logged in to Convex on this machine | **n**. To move to the cloud, use `bun run convex:cloud` |
+| Question                                                                                                                 | When                                                                     | Answer                                              |
+| ------------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------ | --------------------------------------------------- |
+| Welcome to Convex! Would you like to login to your account?                                                              | The first `setup`                                                        | **Start without an account (run Convex locally)**   |
+| CONVEX_DEPLOYMENT is configured with deployment …, which is not linked with your account. Would you like to link it now? | Every `setup` and `dev`, if you have logged in to Convex on this machine | **n**. To use the cloud, run `bun run convex:cloud` |
 
 On Windows, use PowerShell or Windows Terminal. Git Bash works too. The Git hooks run under
 the `sh` that ships with Git for Windows. A few commands in this README are written for `sh`:
@@ -111,27 +111,28 @@ Other commands:
 
 ```sh
 bun run convex:dashboard  # Convex dashboard on http://127.0.0.1:6790, while `dev` runs
-bun run convex:reset      # delete every document on the dev deployment, components included
-bun run convex:seed       # sample users who can sign in, with notes. Safe to re-run
+bun run convex:reset      # delete every document on the dev deployment, components included.
+                          # --skip-confirmation doesn't ask first
+bun run convex:seed       # a sample user who can sign in, with notes. Safe to re-run
 bun run check             # format, lint, types. `vp check --fix` fixes what it can
 bun run test              # unit tests
 bun run build             # production build of apps/web
 ```
 
-`convex:seed` signs up ada@example.com and grace@example.com, verifies their emails, and gives
-each a name and two notes. Both sign in with the password `Test!12345`. It skips an
-email that already has an account, so after `convex:reset` it seeds again. It runs only while
+`convex:seed` signs up admin@mail.com, verifies its email, and gives it a name and two notes.
+It signs in with the password `Test!12345`. It skips an email that already has an account, so
+after `convex:reset` it seeds again. It runs only while
 `SITE_URL` is a localhost URL and `RESEND_API_KEY` is unset, so the known password never
-reaches a deployment others can open. The users are in `packages/backend/convex/models/seed/`.
+reaches a deployment others can open. The user is in `packages/backend/convex/models/seed/`.
 
 ### Local or cloud Convex
 
-`setup` starts you on a Convex deployment on your machine. To develop against Convex Cloud
-instead, or to switch back:
+`setup` starts you on a Convex deployment on your machine, which needs no account. To develop
+against Convex Cloud instead, which does, or to switch back:
 
 ```sh
-bun run convex:cloud   # your dev deployment on Convex Cloud. Logs in and links a project if needed
-bun run convex:local   # the deployment on your machine
+bun run convex:cloud   # your dev deployment on Convex Cloud. Logs in, and links a project the first time
+bun run convex:local   # the deployment on your machine. No account or login
 bun run convex:which   # which one the app uses now
 ```
 
@@ -141,9 +142,10 @@ it if they're missing, pushes the functions and points `apps/web/.env.local` at 
 `bun run convex:seed`. The cloud dev deployment is yours alone, and production and previews
 stay separate (see [Deploy](#deploy)).
 
-The first `convex:local` after linking a project replaces a local deployment made without an
-account, which the CLI can't select from a project. Its data stays in
-`packages/backend/.convex/local/anonymous-…`.
+The local deployment is anonymous: it isn't linked to an account even when you're logged in,
+and `bun run convex:dashboard` opens its dashboard on http://127.0.0.1:6790. While it's in use,
+`CONVEX_CLOUD_PROJECT` in `packages/backend/.env.local` remembers the cloud project (as
+`team:project`), so `convex:cloud` goes back to it without asking.
 
 ## Environment variables
 
@@ -154,6 +156,7 @@ account, which the CLI can't select from a project. Its data stays in
 | `VITE_CONVEX_URL`               | `apps/web/.env.local`, deploy build | `scripts/sync-env.ts`, `convex deploy` | Convex URL the browser connects to        |
 | `CONVEX_DEPLOYMENT`             | `packages/backend/.env.local`       | `convex dev`                           | Deployment the Convex CLI targets         |
 | `CONVEX_URL`, `CONVEX_SITE_URL` | `packages/backend/.env.local`       | `convex dev`                           | Deployment URLs                           |
+| `CONVEX_CLOUD_PROJECT`          | `packages/backend/.env.local`       | `scripts/use-convex.ts`                | Cloud project `convex:cloud` goes back to |
 | `CONVEX_DEPLOY_KEY`             | Workers Builds secret               | you                                    | Deploys `main` to Convex production       |
 | `CONVEX_PREVIEW_DEPLOY_KEY`     | Workers Builds secret               | you                                    | Deploys other branches to Convex previews |
 
@@ -334,8 +337,10 @@ Cloudflare.
 
 Workers Builds deploys without waiting for GitHub Actions, so `main` is protected by the
 ruleset in `.github/rulesets/main.json`: changes go in through a pull request, which can
-only merge once `ready` passes and CodeQL has scanned it, and nobody can push to `main`
-directly, admins included. CodeQL blocks the merge on a security alert of high severity or
+only merge once `ready` passes and CodeQL has scanned it. Only repo admins can push to `main`
+directly, skipping those checks: in a personal repo that's just the owner, as GitHub doesn't let
+collaborators there be admins. In an organization, remove the `bypass_actors` entry to require
+a pull request from everyone. CodeQL blocks the merge on a security alert of high severity or
 above, or on any other alert at error level. Pull requests are squash-merged, so each commit
 on `main` is one checked pull request, titled and described as the PR was.
 Each PR gets a Cloudflare preview, built whether or not its checks pass, and merging
@@ -413,7 +418,7 @@ Delete these files and lines, then run `bun run check`:
 - `apps/web/src/routes/_authed/notes.tsx`
 - the Notes links in `apps/web/src/routes/index.tsx` and `apps/web/src/routes/__root.tsx`
 - `AFTER_SIGN_IN` in `apps/web/src/lib/auth.ts`: point it at your first private page
-- the `notes` of each seed user, and the insert below them, in
+- the seed user's `notes`, and the insert below them, in
   `packages/backend/convex/models/seed/functions.ts`
 
 `bun run dev` regenerates `apps/web/src/routeTree.gen.ts` and `convex/_generated`.
