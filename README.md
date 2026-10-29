@@ -283,11 +283,12 @@ Tell me what you ran, the URLs, and anything that failed.
 
    ```sh
    gh api --method POST repos/{owner}/{repo}/rulesets --input .github/rulesets/main.json
-   gh api --method PATCH repos/{owner}/{repo} -F allow_merge_commit=false -F allow_rebase_merge=false -f squash_merge_commit_title=PR_TITLE -f squash_merge_commit_message=PR_BODY
+   gh api --method PATCH repos/{owner}/{repo} -F allow_merge_commit=false -F allow_rebase_merge=false -f squash_merge_commit_title=PR_TITLE -f squash_merge_commit_message=PR_BODY -F allow_auto_merge=true -F delete_branch_on_merge=true
    ```
 
    The second command leaves squash as the only merge button, with the pull request's title
-   and description as the commit message.
+   and description as the commit message. It also turns on auto-merge, so a pull request can
+   be set to merge once its checks pass, and deletes each branch once its PR merges.
 
    The build runs no checks, so this ruleset is what keeps failing code out of production.
    It needs the `ready` check to have run once, which the first push does. In a private repo
