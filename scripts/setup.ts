@@ -1,11 +1,13 @@
-// One-time local setup, safe to re-run. On a fresh clone it makes an anonymous Convex deployment
-// on this machine, which needs no account, as `bun run convex:local` does. Once there's a
-// deployment, local or cloud, it sets the variables Convex Auth needs on it if they're missing,
-// pushes the functions, and writes VITE_CONVEX_URL for the web app.
+// One-time local setup, safe to re-run. On a fresh clone, or when the local deployment was deleted,
+// it makes an anonymous Convex deployment on this machine, which needs no account, as
+// `bun run convex:local` does. Once there's a deployment, local or cloud, it sets the variables
+// Convex Auth needs on it if they're missing, pushes the functions, and writes VITE_CONVEX_URL for
+// the web app.
 import { spawnSync } from "node:child_process";
 import { existsSync, readFileSync } from "node:fs";
 import { join } from "node:path";
 import { ensureAuthEnv } from "./auth.js";
+import { isLocalDeploymentGone } from "./convex.js";
 
 const root = join(import.meta.dirname, "..");
 const backendDir = join(root, "packages/backend");
@@ -17,7 +19,7 @@ const bun = process.execPath;
 
 const hasDeployment =
   existsSync(backendEnv) && /^CONVEX_DEPLOYMENT=./m.test(readFileSync(backendEnv, "utf8"));
-if (!hasDeployment) {
+if (!hasDeployment || isLocalDeploymentGone()) {
   const result = spawnSync(bun, ["scripts/convex.ts", "local"], {
     cwd: root,
     stdio: "inherit",

@@ -24,10 +24,12 @@
     "convex:auth": "bun scripts/auth.ts",
     "convex:local": "bun scripts/convex.ts local",
     "convex:cloud": "bun scripts/convex.ts cloud",
+    "convex:local:delete": "bun scripts/convex.ts delete",
     "convex:which": "bun scripts/convex.ts which",
     "convex:dashboard": "vp run --filter @workspace/backend dashboard",
     "convex:reset": "bun scripts/convex.ts reset",
-    "convex:seed": "vp run --no-cache --filter @workspace/backend seed"
+    "convex:seed": "vp run --no-cache --filter @workspace/backend seed",
+    "convex:update:skills": "bun scripts/convex.ts skills"
   },
   "devDependencies": {
     "@tanstack/intent": "^0.5.6",

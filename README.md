@@ -138,20 +138,28 @@ Run them from the repo root.
 - **`bun install`** installs the dependencies and the Git hooks. The pre-commit hook runs
   `vp check --fix` on the staged files.
 - **`bun run setup`** gets a fresh clone running, and is safe to re-run. Without a Convex
-  deployment, it creates an anonymous one on your machine, as `convex:local` does. Then it sets
-  the auth variables on the deployment if they're missing, pushes the functions and writes
-  `apps/web/.env.local`. A deployment that's already there, local or cloud, stays.
+  deployment, or when `packages/backend/.convex/` was deleted, it creates an anonymous one on
+  your machine, as `convex:local` does. Then it sets the auth variables on the deployment if
+  they're missing, pushes the functions and writes `apps/web/.env.local`. A deployment that's
+  already there, local or cloud, stays.
 - **`bun run dev`** points `apps/web/.env.local` at the deployment, then runs `convex dev` and
   the web app on http://localhost:3000. `convex dev` pushes the functions on every change and
   prints their logs and the auth emails. On the local deployment, it also runs the Convex
   backend and its dashboard.
 
+- **`bun run convex:update:skills`** refreshes Convex's agent guidelines and skills in
+  `packages/backend`.
+
 ### Convex deployment
 
 - **`bun run convex:local`** switches to the anonymous deployment on your machine, creating one
-  the first time. It needs no account or login.
+  the first time or when `packages/backend/.convex/` was deleted. It needs no account or login.
 - **`bun run convex:cloud`** switches to your personal dev deployment on Convex Cloud. It logs
   in if you're logged out, and the first time it asks you to pick or create a project.
+- **`bun run convex:local:delete`** deletes the anonymous deployment on your machine with its
+  data, and clears it from the env files. It asks you to type "delete" first, unless you pass
+  `--skip-confirmation` (or `-y`), and `dev` must be stopped. It leaves cloud deployments and
+  `CONVEX_CLOUD_PROJECT` alone. `bun run setup` makes a new one.
 - **`bun run convex:which`** prints the deployment in use and its URL. It changes nothing.
 - **`bun run convex:dashboard`** opens the Convex dashboard: on http://127.0.0.1:6790 for the
   local deployment while `dev` runs, and on dashboard.convex.dev for a cloud one.

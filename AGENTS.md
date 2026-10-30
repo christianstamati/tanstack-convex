@@ -68,22 +68,24 @@ for `sh` (Git Bash on Windows); in PowerShell, set `$env:NAME = "value"` first. 
 `convex run` arguments as JSON5 in double quotes, such as `"{to: 'ada@example.com'}"`: every
 shell passes that through unchanged, while `'{"to": …}'` breaks in cmd.exe and in PowerShell.
 
-| Command                    | What it does                                                        |
-| -------------------------- | ------------------------------------------------------------------- |
-| `bun install`              | Install dependencies and the Vite+ git hooks                        |
-| `bun run setup`            | One-time local setup: local Convex deployment and env               |
-| `bun run convex:auth`      | Auth variables on a deployment: `env`, `check`, `rotate` (`--prod`) |
-| `bun run convex:cloud`     | Use your Convex Cloud dev deployment: logs in, links a project      |
-| `bun run convex:local`     | Use an anonymous Convex deployment on this machine: no account      |
-| `bun run convex:which`     | Print which Convex deployment the app uses                          |
-| `bun run convex:reset`     | Delete every document on the dev deployment (`--skip-confirmation`) |
-| `bun run convex:seed`      | A sample user who can sign in, with notes. Safe to re-run           |
-| `bun run dev`              | Convex dev and the web dev server on http://localhost:3000          |
-| `bun run convex:dashboard` | Local Convex dashboard on http://127.0.0.1:6790 (needs `dev`)       |
-| `bun run check`            | Format, lint and type check (`vp check`). Fix with `vp check --fix` |
-| `bun run test`             | Unit tests (Vitest via `vp test`, convex-test for Convex)           |
-| `bun run build`            | Production build of apps/web                                        |
-| `bun run ready`            | Check, test and build: run before pushing                           |
+| Command                        | What it does                                                        |
+| ------------------------------ | ------------------------------------------------------------------- |
+| `bun install`                  | Install dependencies and the Vite+ git hooks                        |
+| `bun run setup`                | One-time local setup: local Convex deployment and env               |
+| `bun run convex:auth`          | Auth variables on a deployment: `env`, `check`, `rotate` (`--prod`) |
+| `bun run convex:cloud`         | Use your Convex Cloud dev deployment: logs in, links a project      |
+| `bun run convex:local`         | Use an anonymous Convex deployment on this machine: no account      |
+| `bun run convex:local:delete`  | Delete the anonymous local deployment and its data (`-y`)           |
+| `bun run convex:which`         | Print which Convex deployment the app uses                          |
+| `bun run convex:reset`         | Delete every document on the dev deployment (`--skip-confirmation`) |
+| `bun run convex:seed`          | A sample user who can sign in, with notes. Safe to re-run           |
+| `bun run dev`                  | Convex dev and the web dev server on http://localhost:3000          |
+| `bun run convex:dashboard`     | Local Convex dashboard on http://127.0.0.1:6790 (needs `dev`)       |
+| `bun run convex:update:skills` | Refresh Convex's agent files in packages/backend                    |
+| `bun run check`                | Format, lint and type check (`vp check`). Fix with `vp check --fix` |
+| `bun run test`                 | Unit tests (Vitest via `vp test`, convex-test for Convex)           |
+| `bun run build`                | Production build of apps/web                                        |
+| `bun run ready`                | Check, test and build: run before pushing                           |
 
 The pre-commit hook runs `vp check --fix` on staged files. Don't skip it with `--no-verify`.
 
@@ -182,10 +184,10 @@ PRs are squash-merged, and the PR's title and description become the commit mess
   AGENTS.md and CLAUDE.md, the skills in `.agents/skills/` and `.claude/skills/`,
   `skills-lock.json` and `convex/_generated/ai/`. They come from `convex ai-files install`.
   Don't edit them by hand; `vp check` skips the skills. There is no convex.json, so run the
-  Convex CLI from packages/backend, and refresh them there with
-  `npm_config_force=true bunx convex ai-files update`. The variable gets past npm's refusal
-  to run in a repo whose root package.json has `devEngines` naming Bun, since Convex
-  installs the skills with `npm exec`.
+  Convex CLI from packages/backend. Refresh them with `bun run convex:update:skills`, which
+  runs `convex ai-files update` there with `npm_config_force=true`. The variable gets past
+  npm's refusal to run in a repo whose root package.json has `devEngines` naming Bun, since
+  Convex installs the skills with `npm exec`.
 - The skills for the rest of the stack live at the repo root. TanStack ships its skills in
   its packages, such as `@tanstack/react-router` and `@tanstack/react-start`, so they match
   the installed versions. [Intent](https://github.com/TanStack/intent) (`@tanstack/intent`)
