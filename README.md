@@ -54,8 +54,8 @@ Or follow the steps below yourself.
 | ------------ | ----------------------------- | ---------------------------------- |
 | Git          | any recent                    | [git-scm.com](https://git-scm.com) |
 | Vite+ (`vp`) | global CLI                    | see below                          |
-| Node         | 24.22.1, from `.node-version` | installed by `vp`                  |
-| Bun          | 1.4.4, from `packageManager`  | installed by `vp`                  |
+| Node         | 24.22.3, from `.node-version` | installed by `vp`                  |
+| Bun          | 1.4.5, from `packageManager`  | installed by `vp`                  |
 
 Install the global `vp` CLI and let it manage Node and package managers when the installer
 asks:
@@ -71,7 +71,7 @@ irm https://vite.plus/ps1 | iex
 ```
 
 Open a new terminal. In this repo, `node` and `bun` then resolve to the versions the
-repo pins; `vp env current` shows them. If you already have Node 24 and Bun 1.4.4
+repo pins; `vp env current` shows them. If you already have Node 24 and Bun 1.4.5
 installed yourself, you can skip `vp`: the repo's `vp` comes from `node_modules`.
 
 No Convex or Cloudflare account is needed to start.
@@ -359,7 +359,7 @@ Tell me what you ran, the URLs, and anything that failed.
    | Build command   | `bun run build:cloudflare`                                       |
    | Deploy command  | `bunx cf deploy --prebuilt`                                      |
    | Preview command | `bunx cf previews deploy --prebuilt`                             |
-   | Build variables | `BUN_VERSION` = `1.4.4`, `SKIP_DEPENDENCY_INSTALL` = `1`         |
+   | Build variables | `BUN_VERSION` = `1.4.5`, `SKIP_DEPENDENCY_INSTALL` = `1`         |
    | Build secrets   | `CONVEX_DEPLOY_KEY`, `CONVEX_PREVIEW_DEPLOY_KEY`                 |
 
    Settings > Build has a Production tab and a Previews Base tab, and connecting the repo

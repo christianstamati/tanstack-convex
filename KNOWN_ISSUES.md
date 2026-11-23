@@ -2,7 +2,7 @@
 
 Auth runs on [Convex Auth](https://github.com/get-convex/convex-auth) 2.0.0-beta.0 and
 [@samebase/convex-auth-tanstack-start](https://github.com/samebase/convex-hosting/tree/main/packages/convex-auth-tanstack-start)
-0.1.1, both pinned to exact versions. This file lists what the beta can't do yet, what we
+0.1.2, both pinned to exact versions. This file lists what the beta can't do yet, what we
 haven't built, and the workarounds in the code. When you upgrade, check each item again and
 remove the ones that are fixed.
 
@@ -41,11 +41,11 @@ remove the ones that are fixed.
   imports a `.wasm` file that Vitest can't load (the `wasm-module` plugin in
   `packages/backend/vite.config.ts`).
 
-## Limits of the Cloudflare betas
+## Limits of the Cloudflare prereleases
 
-The web app builds with `@cloudflare/vite-plugin` 2.0.0-beta.v.6 and deploys with the `cf` CLI
-1.0.0-beta.24, both pinned exactly. We moved off plugin 1.65.0 because it pinned a miniflare
-with undici 7.29.1, which has 4 high-severity advisories. The beta's miniflare uses 7.30.1.
+The web app builds with `@cloudflare/vite-plugin` 2.0.0-rc.3 and deploys with the `cf` CLI
+1.0.0-rc.2, both pinned exactly. We moved off plugin 1.65.0 because it pinned a miniflare
+with undici 7.29.1, which has 4 high-severity advisories. The 2.0 miniflare uses 7.30.1.
 
 Deploying through `cf` works. We first deployed production by hand with
 `bunx cf deploy --prebuilt`, and a Workers Builds preview with
